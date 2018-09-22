@@ -28,3 +28,9 @@ fakeroot rm -v rootfs.cgz
 cd $BASEDIR
 
 fakeroot tar -C $WORKING_DIRECTORY -vc . | docker import - coinboot-builder
+
+echo 'Increasing number of file watches for inotify to 200000.'
+echo "200000" | sudo tee /proc/sys/fs/inotify/max_user_watches
+
+docker run --rm -it coinboot-builder bash -v ./src:/opt
+
