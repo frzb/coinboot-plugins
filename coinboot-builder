@@ -1,0 +1,30 @@
+#!/bin/bash -e
+
+# Copyright (C) 2018 Gunter Miegel coinboot.io
+#
+# This file is part of Coinboot.
+# This software may be modified and distributed under the terms
+# of the MIT license.  See the LICENSE file for details.
+
+# Helper script to convert initramfs archive into a Docker container.
+
+INITRAMFS=$(readlink -f $1)
+BASEDIR=$PWD
+WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinboot-builder
+
+mkdir -p $WORKING_DIRECTORY
+cd $WORKING_DIRECTORY
+
+zcat $INITRAMFS | fakeroot cpio -idm
+
+# Now we extract the nested initramfs
+# We force to overwrite existing files from busybox with '-u'
+zcat rootfs.cgz | fakeroot cpio -uidm
+
+# The nested initramfs archive can be removed now
+echo $PWD
+fakeroot rm -v rootfs.cgz
+
+cd $BASEDIR
+
+fakeroot tar -C $WORKING_DIRECTORY -vc . | docker import - coinboot-builder
