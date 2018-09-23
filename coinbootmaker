@@ -10,7 +10,7 @@
 
 INITRAMFS=$(readlink -f $1)
 BASEDIR=$PWD
-WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinboot-builder
+WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_-coinbootmaker
 
 mkdir -p $WORKING_DIRECTORY
 cd $WORKING_DIRECTORY
@@ -27,10 +27,16 @@ fakeroot rm -v rootfs.cgz
 
 cd $BASEDIR
 
-fakeroot tar -C $WORKING_DIRECTORY -vc . | docker import - coinboot-builder
+fakeroot tar -C $WORKING_DIRECTORY -vc . | docker import - coinbootmaker
 
-echo 'Increasing number of file watches for inotify to 200000.'
-echo "200000" | sudo tee /proc/sys/fs/inotify/max_user_watches
+if ! grep -q '200000' /proc/sys/fs/inotify/max_user_watches; then 
+  echo 'Increasing number of file watches for inotify to 200000.'
+  echo 'This requires sudo privileges'
+  echo '200000' | sudo tee /proc/sys/fs/inotify/max_user_watches
+fi
 
-docker run --rm -it coinboot-builder bash -v ./src:/opt
+docker run --rm -it -v "$PWD":/mnt coinbootmaker bash
+
+echo "Cleaning up $WORKING_DIRECTORY"
+rm -rf $WORKING_DIRECTORY
 
