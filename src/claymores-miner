@@ -22,11 +22,11 @@ CLAYMORES_CACHE_PATH=/mnt/cache/claymores
 MEGATOOLS='megatools'
 LIBCURL='libcurl3'
 
-sudo apt update
+sudo apt-get update
 
 create_plugin start
 
-sudo apt install --yes $MEGATOOLS $LIBCURL --no-install-recommends
+sudo apt-get install --yes $MEGATOOLS $LIBCURL --no-install-recommends
 
 if ! [ -d "$CLAYMORES_CACHE_PATH"/"$CLAYMORES_NAME" ]; then
   megadl $CLAYMORES_URL --path=/tmp/ > /dev/null
