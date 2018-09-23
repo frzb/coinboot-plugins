@@ -31,7 +31,7 @@ fakeroot rm -v rootfs.cgz
 
 cd $BASEDIR
 
-fakeroot tar -C $WORKING_DIRECTORY -vc . | docker import - coinbootmaker
+fakeroot tar -C $WORKING_DIRECTORY -c . | docker import - coinbootmaker
 
 if ! grep -q '200000' /proc/sys/fs/inotify/max_user_watches; then
   echo 'Increasing number of file watches for inotify to 200000.'
