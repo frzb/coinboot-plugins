@@ -29,7 +29,15 @@ create_plugin start
 sudo apt-get install --yes $MEGATOOLS $LIBCURL --no-install-recommends
 
 if ! [ -d "$CLAYMORES_CACHE_PATH"/"$CLAYMORES_NAME" ]; then
-  megadl --no-progress $CLAYMORES_URL --path=/tmp/
+  if  [ TRAVIS=true ]; then 
+    megadl --no-progress $CLAYMORES_URL --path=/tmp/ &
+    while ps aux | grep -q megadl; do
+      echo "Download of Claymore's miner still in progress ..."
+      sleep 30
+    done
+  else 
+    megadl $CLAYMORES_URL --path=/tmp/ &
+  fi
 else
   echo "$CLAYMORES_ARCHIVE is already in build cache."
 fi
