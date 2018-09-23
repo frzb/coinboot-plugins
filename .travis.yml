@@ -1,0 +1,24 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install --yes fakeroot
+  - wget https://github.com/frzb/coinboot-debirf/releases/download/20180923/coinboot-initramfs-4.4.0-133-generic -P /tmp
+
+script:
+  - ./coinbootmaker /tmp/coinboot-initramfs-4.4.0-133-generic
+  - ls -la build
+
+deploy:
+  provider: releases
+  api_key: ${TOKEN}
+  file_glob: true
+  file: build/*
+  skip_cleanup: true
+  on:
+    repo: frzb/coinboot-plugin
+    branch: master
+    tags: false

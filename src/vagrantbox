@@ -15,6 +15,8 @@
 # Create a plugin archive to make the machine act as Vagrant box.
 # TODO: Try to achive most of this only by vagrant settings.
 
+sudo apt update
+
 create_plugin start
 
 useradd -m -p $(openssl passwd -1 vagrant) -s /bin/bash -G sudo vagrant
@@ -30,7 +32,6 @@ sudo chown vagrant:vagrant -R /home/vagrant/.ssh
 sudo chmod -R 700 /home/vagrant/.ssh
 sudo chmod -R 600 /home/vagrant/.ssh/authorized_keys
 
-sudo apt update
 sudo apt install virtualbox-guest-utils --no-install-recommends --yes
 
-create_plugin finish coinboot_$0_$(date +%Y%m%d.%H%M)
+create_plugin finish coinboot_$(basename $0)_$(date +%Y%m%d.%H%M)

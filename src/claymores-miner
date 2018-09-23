@@ -18,16 +18,27 @@ CLAYMORES_RELEASE=v11.9
 CLAYMORES_NAME="Claymore""'""s Dual Ethereum+Decred_Siacoin_Lbry_Pascal_Blake2s_Keccak AMD+NVIDIA GPU Miner $CLAYMORES_RELEASE - LINUX"
 CLAYMORES_ARCHIVE="$CLAYMORES_NAME.tar.gz"
 CLAYMORES_URL='https://mega.nz/#F!O4YA2JgD!n2b4iSHQDruEsYUvTQP5_w'
-CLAYMORES_CACHE_PATH=/vagrant/cache/claymores
+CLAYMORES_CACHE_PATH=/mnt/cache/claymores
 MEGATOOLS='megatools'
 LIBCURL='libcurl3'
 
+sudo apt-get update
+
 create_plugin start
 
-sudo apt install --yes $MEGATOOLS $LIBCURL --no-install-recommends
+sudo apt-get install --yes $MEGATOOLS $LIBCURL --no-install-recommends
 
 if ! [ -d "$CLAYMORES_CACHE_PATH"/"$CLAYMORES_NAME" ]; then
-  megadl $CLAYMORES_URL --path=/tmp/
+  if  [ TRAVIS=true ]; then 
+    megadl --no-progress $CLAYMORES_URL --path=/tmp/ &
+    while ps aux | grep -q megadl; do
+      echo "Download of Claymore's miner still in progress ..."
+      sleep 30
+      du -sh /tmp/Claymore* || true
+    done
+  else 
+    megadl $CLAYMORES_URL --path=/tmp/ &
+  fi
 else
   echo "$CLAYMORES_ARCHIVE is already in build cache."
 fi
@@ -49,8 +60,6 @@ if ! [ -d "$DEBIRF_ROOT/usr/local/bin/claymores" ]; then
 else
   echo "Claymore's Miner $CLAYMORES_RELEASE binary is already copied to the build environment."
 fi
-
-chmod a+x "$DEBIRF_ROOT/usr/local/bin/claymores_start"
 
 sudo tee /etc/systemd/system/claymores.service << 'EOF'
 [Unit]
@@ -101,4 +110,4 @@ chmod a+x /usr/local/bin/claymoresctl
 # Get rid of tools for mega.nz cause we don't need them for mining.
 sudo apt purge --yes $MEGATOOLS
 
-create_plugin finish coinboot_$0_$CLAYMORES_RELEASE_$(date +%Y%m%d.%H%M)
+create_plugin finish coinboot_$(basename $0)_${CLAYMORES_RELEASE}_$(date +%Y%m%d.%H%M)
