@@ -33,8 +33,8 @@ if ! [ -d "$CLAYMORES_CACHE_PATH"/"$CLAYMORES_NAME" ]; then
     megadl --no-progress $CLAYMORES_URL --path=/tmp/ &
     while ps aux | grep -q megadl; do
       echo "Download of Claymore's miner still in progress ..."
-      du -sh /tmp/Claymore*
       sleep 30
+      du -sh /tmp/Claymore* || true
     done
   else 
     megadl $CLAYMORES_URL --path=/tmp/ &
