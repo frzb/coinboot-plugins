@@ -4,8 +4,8 @@ services:
   - docker
 
 before_install:
-  - sudo apt update
-  - sudo apt install fakeroot
+  - sudo apt-get update
+  - sudo apt-get install fakeroot
   - wget https://github.com/frzb/coinboot-debirf/releases/download/20180923/coinboot-initramfs-4.4.0-133-generic -P /tmp
 
 script:
