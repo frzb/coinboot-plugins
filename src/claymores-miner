@@ -29,7 +29,7 @@ create_plugin start
 sudo apt-get install --yes $MEGATOOLS $LIBCURL --no-install-recommends
 
 if ! [ -d "$CLAYMORES_CACHE_PATH"/"$CLAYMORES_NAME" ]; then
-  megadl $CLAYMORES_URL --path=/tmp/ > /dev/null
+  megadl $CLAYMORES_URL --path=/tmp/
 else
   echo "$CLAYMORES_ARCHIVE is already in build cache."
 fi
