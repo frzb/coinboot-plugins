@@ -19,6 +19,6 @@ deploy:
   file: build/*
   skip_cleanup: true
   on:
-    repo: frzb/coinboot-plugin
+    repo: frzb/coinboot-plugins
     branch: master
     tags: false
