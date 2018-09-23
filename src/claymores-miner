@@ -101,4 +101,4 @@ chmod a+x /usr/local/bin/claymoresctl
 # Get rid of tools for mega.nz cause we don't need them for mining.
 sudo apt purge --yes $MEGATOOLS
 
-create_plugin finish coinboot_$0_$CLAYMORES_RELEASE_$(date +%Y%m%d.%H%M)
+create_plugin finish coinboot_$(basename $0)_${CLAYMORES_RELEASE}_$(date +%Y%m%d.%H%M)

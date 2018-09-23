@@ -83,4 +83,4 @@ EOF
 
 chmod a+x "/usr/local/bin/ethminerctl"
 
-create_plugin finish $0_$ETHMINER_RELASE_$(date +%Y%m%d.%H%M)
+create_plugin finish coinboot_$(basename $0)_${ETHMINER_RELASE}_$(date +%Y%m%d.%H%M)

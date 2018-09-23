@@ -34,4 +34,4 @@ sudo chmod -R 600 /home/vagrant/.ssh/authorized_keys
 
 sudo apt install virtualbox-guest-utils --no-install-recommends --yes
 
-create_plugin finish coinboot_$0_$(date +%Y%m%d.%H%M)
+create_plugin finish coinboot_$(basename $0)_$(date +%Y%m%d.%H%M)
