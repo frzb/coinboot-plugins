@@ -1,10 +1,11 @@
+
 ![Logo of Coinboot](https://raw.githubusercontent.com/frzb/coinboot/master/coinboot.png)
 
 ## Plugins for Coinboot
 
-This repository contains plugins for Coinboot which expand Coinboot 
-with further software.
-Coinboot is a framework for diskless computing. 
+Coinboot is a framework for diskless computing.   
+This repository contains plugins for Coinboot which expand Coinboot with further software and functionalities.  
+It also contains `coinbootmaker` - a little helper to build your own Coinboot plugins.  
   
 For more information how to boot your machines with Coinboot visit: https://coinboot.io
 
@@ -12,9 +13,33 @@ For more information how to boot your machines with Coinboot visit: https://coin
 
 * A running Coinboot setup
 
+* Docker if you want to build plugins on your own
+
 ## Usage
 
-Put the plugins your want to use into the `plugins` directory of your Coinboot setup.
+### Pre-built Plugins
+
+Put the pre-built plugins of your choice that your can download under [releases](https://github.com/frzb/coinboot-plugins/releases)
+into the `plugins` directory of your Coinboot setup.
+
+### Build the Plugins
+
+To build Coinboot plugins on your own use `coinbootmaker`.
+
+```
+$ ./coinbootmaker <path to Coinboot Initramfs>
+```
+
+For example:
+
+```
+$ ./coinbootmaker /tmp/coinboot-initramfs-4.4.0-133-generic  
+```
+
+`coinbootmaker` takes a path to a Coinboot-Initramfs to create an environment for building the plugins  
+by converting the given Initramfs into a Docker container image.  
+All plugin scripts located at `src` are than executed in that `coinbootmaker` container and the resulting  
+plugin archives are written to the `build` directory.
 
 ## License
 
