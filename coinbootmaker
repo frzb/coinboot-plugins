@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # Copyright (C) 2018 Gunter Miegel coinboot.io
 #
@@ -8,8 +8,41 @@
 
 # Helper script to convert initramfs archive into a Docker container.
 
-INITRAMFS=$(readlink -f $1)
+display_help() {
+  echo
+  echo 'Coinbootmaker creates an environment for building Coinboot plugins from an'
+  echo 'given Coinboot Initramfs.'
+  echo
+  echo 'When no arguments beside the path to a Coinboot Initramfs is supplied'
+  echo 'Coinbootmaker automatically builds all plugins from the ./src directory.'
+  echo 'Packaged Coinboot pluings are written to the ./builds directory'
+  echo
+  echo 'Usage: coinbootmaker [-i] <path to initramfs>'
+  echo
+  echo '-i            Interactive mode - opens a shell in the build environment'
+  echo '-h            Display this help'
+  echo
+}
+
+while getopts "ih" opt; do
+  case $opt in
+    i)
+      interactive=true
+      ;;
+    h)
+      display_help
+      exit 1
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      ;;
+  esac
+done
+
+shift $((OPTIND -1))
+
 BASEDIR=$PWD
+INITRAMFS=$1
 WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_-coinbootmaker
 
 install -d cache
@@ -39,7 +72,11 @@ if ! grep -q '200000' /proc/sys/fs/inotify/max_user_watches; then
   echo '200000' | sudo tee /proc/sys/fs/inotify/max_user_watches
 fi
 
-docker run --rm -it -v "$PWD":/mnt coinbootmaker bash -c 'cd /mnt/build/ && run-parts /mnt/src'
+if [ $interactive = 'true' ]; then
+  docker run --rm -it -v "$PWD":/mnt coinbootmaker bash
+else
+  docker run --rm -it -v "$PWD":/mnt coinbootmaker bash -c 'cd /mnt/build/ && run-parts /mnt/src'
+fi
 
 echo "Cleaning up $WORKING_DIRECTORY"
 rm -rf $WORKING_DIRECTORY
