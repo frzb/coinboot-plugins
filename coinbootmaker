@@ -72,7 +72,7 @@ if ! grep -q '200000' /proc/sys/fs/inotify/max_user_watches; then
   echo '200000' | sudo tee /proc/sys/fs/inotify/max_user_watches
 fi
 
-if [ $interactive = 'true' ]; then
+if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   docker run --rm -it -v "$PWD":/mnt coinbootmaker bash
 else
   docker run --rm -it -v "$PWD":/mnt coinbootmaker bash -c 'cd /mnt/build/ && run-parts /mnt/src'
