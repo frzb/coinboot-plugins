@@ -72,6 +72,31 @@ if ! grep -q '200000' /proc/sys/fs/inotify/max_user_watches; then
   echo '200000' | sudo tee /proc/sys/fs/inotify/max_user_watches
 fi
 
+# We are affected by a race condition by the way how 'inotifywait'
+# used in 'create_plugin' uses 'inotify' on recursive directories when
+# not running on a superfast storage backend like RAMFS/TMPFS.
+# Leading to random missing files while creating an plugin archive.
+# There was a regression Docker < 18.02 ignoring
+# the environment variable DOCKER_RAMDISK to be set.
+# https://github.com/moby/moby/issues/36120
+
+docker_version=$(docker info 2> /dev/null | grep "Server Version"|cut -d' ' -f 3)
+docker_version_major=$(echo $docker_version | cut -d '.' -f 1)
+docker_version_minor=$(echo $docker_version | cut -d '.' -f 2 | sed 's/^0//')
+
+if  [ $docker_version_major -lt 18 ]; then
+  echo "You are running Docker $docker_version"
+  echo "You need at least Docker 18.02 with support for DOCKER_RAMDISK"
+  exit 1
+elif [ $docker_version_minor -lt 2 ]; then
+  echo "You are running Docker $docker_version"
+  echo "You need at least Docker 18.02 with support for DOCKER_RAMDISK"
+  exit 1
+fi
+
+export DOCKER_RAMDISK=true
+
+
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   docker run --rm -it -v "$PWD":/mnt coinbootmaker bash
 else
