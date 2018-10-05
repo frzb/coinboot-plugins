@@ -69,7 +69,7 @@ After=network-online.target
 [Service]
 EnvironmentFile=/etc/environment
 WorkingDirectory=/usr/local/bin/claymores
-ExecStart=/usr/local/bin/claymores/ethdcrminer64 -epool eu1.ethermine.org:4444 -ewal $ETHEREUM_ADDRESS.%H -epsw x
+ExecStart=/usr/local/bin/claymores/ethdcrminer64 -epool eu1.ethermine.org:4444 -ewal ${ETHEREUM_ADDRESS}.%H -epsw x
 Restart=on-failure
 
 [Install]
