@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -e
+set -x
 
 # Copyright (C) 2018 Gunter Miegel coinboot.io
 #
@@ -42,35 +43,65 @@ done
 shift $((OPTIND -1))
 
 BASEDIR=$PWD
-INITRAMFS=$1
-WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_-coinbootmaker
+INITRAMFS=$(readlink -f $1)
+WORKING_DIRECTORY=/dev/shm/$(basename $INITRAMFS)_extracted_by_coinbootmaker
 
 install -d cache
 install -d build
 
-mkdir -p $WORKING_DIRECTORY
-cd $WORKING_DIRECTORY
+mkdir -p $WORKING_DIRECTORY/rootfs
+cd $WORKING_DIRECTORY/rootfs
 
 
-zcat $INITRAMFS | fakeroot cpio -idm
+zcat $INITRAMFS | fakeroot cpio -idm 
 
 # Now we extract the nested initramfs
 # We force to overwrite existing files from busybox with '-u'
-zcat rootfs.cgz | fakeroot cpio -uidm
+zcat rootfs.cgz | fakeroot cpio -vuidm 
 
 # The nested initramfs archive can be removed now
 echo $PWD
 fakeroot rm -v rootfs.cgz
 
-cd $BASEDIR
+cd $WORKING_DIRECTORY 
 
-fakeroot tar -C $WORKING_DIRECTORY -c . | docker import - coinbootmaker
+# Generate container spec file config.json
+docker-runc spec
 
-if ! grep -q '200000' /proc/sys/fs/inotify/max_user_watches; then
-  echo 'Increasing number of file watches for inotify to 200000.'
-  echo 'This requires sudo privileges'
-  echo '200000' | sudo tee /proc/sys/fs/inotify/max_user_watches
-fi
+# Allow writes
+# jq can not work inplace - so we use a temporary file instead
+jq '.root.readonly = "true"' config.json > config.json_tmp
+mv config.json_tmp config.json
+
+# Assing namespace with path.
+# Watchout for the shell variable 'nspath' handed over jq as a jq varibale.
+nspath=/var/run/netns/coinbootmaker
+jq --arg nspath "$nspath" '(.linux.namespaces[] | select(.type == "network") |=. + {"path": $nspath})' config.json > config.json_tmp
+mv config.json_tmp config.json
+
+# We hijack the default Docker bridge docker0 for network access of our container.
+# Least effort approch to determine a free und usable adress:
+# Pick the highest available address of the 172.17.0.0. network which is 172.17.255.254/16.
+# There are good chances that this address is unused.
+
+sudo ip link add name cbm-host type veth peer name cbm-guest
+sudo ip link set cbm-host up
+sudo brctl addif docker0 cbm-host
+sudo ip netns add coinbootmaker
+sudo ip link set cbm-guest netns coinbootmaker
+
+# This commands can only be executed if the container is already running.
+sudo docker-runc -d coinbootmaker
+
+while docker-runc list|grep coinbootmaker; do
+  echo 'Waiting for Coinbootmaker container...'
+  sleep 1
+done
+
+sudo ip netns exec coinbootmaker ip link set cbm-guest name eth0
+sudo ip netns exec coinbootmaker ip addr add 172.17.255.254/16 dev eth0
+sudo ip netns exec coinbootmaker set eth0 up
+#$ sudo ip netns exec coinbootmaker ip route add default via 192.168.10.1
 
 # We are affected by a race condition by the way how 'inotifywait'
 # used in 'create_plugin' uses 'inotify' on recursive directories when
@@ -80,28 +111,22 @@ fi
 # the environment variable DOCKER_RAMDISK to be set.
 # https://github.com/moby/moby/issues/36120
 
-docker_version=$(docker info 2> /dev/null | grep "Server Version"|cut -d' ' -f 3)
-docker_version_major=$(echo $docker_version | cut -d '.' -f 1)
-docker_version_minor=$(echo $docker_version | cut -d '.' -f 2 | sed 's/^0//')
 
-if  [ $docker_version_major -lt 18 ]; then
-  echo "You are running Docker $docker_version"
-  echo "You need at least Docker 18.02 with support for DOCKER_RAMDISK"
-  exit 1
-elif [ $docker_version_minor -lt 2 ]; then
-  echo "You are running Docker $docker_version"
-  echo "You need at least Docker 18.02 with support for DOCKER_RAMDISK"
-  exit 1
-fi
+docker-runc exec coinbootmaker /bin/bash
 
-export DOCKER_RAMDISK=true
+# Cleanup
+
+rm -rf $WORKING_DIRECTORY
+
+# Dismante the networking limbo we have done before.
+sudo ip link delete cbm-host
 
 
-if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
-  docker run --rm -it -v "$PWD":/mnt coinbootmaker bash
-else
-  docker run --rm -it -v "$PWD":/mnt coinbootmaker bash -c 'cd /mnt/build/ && run-parts /mnt/src'
-fi
+#if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
+#  docker run --rm -it -v "$PWD":/mnt coinbootmaker /bin/bash
+#else
+#  docker run --rm -it -v "$PWD":/mnt coinbootmaker bash -c 'cd /mnt/build/ && run-parts /mnt/src'
+#fi
 
 echo "Cleaning up $WORKING_DIRECTORY"
 rm -rf $WORKING_DIRECTORY
