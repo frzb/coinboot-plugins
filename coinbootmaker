@@ -11,7 +11,7 @@ set -x
 
 display_help() {
   echo
-  echo 'Coinbootmaker creates an environment for building Coinboot plugins from an'
+  echo 'Coinbootmaker creates an environment for building Coinboot plugins from a'
   echo 'given Coinboot Initramfs.'
   echo
   echo 'When no arguments beside the path to a Coinboot Initramfs is supplied'
@@ -44,24 +44,46 @@ shift $((OPTIND -1))
 
 BASEDIR=$PWD
 INITRAMFS=$(readlink -f $1)
-WORKING_DIRECTORY=/dev/shm/$(basename $INITRAMFS)_extracted_by_coinbootmaker
+WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker
 
-install -d cache
-install -d build
 
+
+#while ! sudo docker-runc list | grep coinbootmaker | grep stopped; do
+#  echo 'Waiting for Coinbootmaker container to be stopped ...'
+#  sleep 1
+#done
+#sudo docker-runc delete coinbootmaker
+sudo docker-runc kill coinbootmaker KILL || true
+sudo docker-runc delete coinbootmaker || true
+sudo ip link delete cbm-host || true
+sudo ip netns delete coinbootmaker || true
+sudo rm -rf $WORKING_DIRECTORY
+
+
+sudo mkdir $WORKING_DIRECTORY
+sudo mount -t tmpfs none $WORKING_DIRECTORY
 mkdir -p $WORKING_DIRECTORY/rootfs
 cd $WORKING_DIRECTORY/rootfs
 
-
-zcat $INITRAMFS | fakeroot cpio -idm
+# We have to use 'sudo' for 'cpio' else the ownership of the files in the
+# archive is messed up.
+zcat $INITRAMFS | sudo cpio -idm
 
 # Now we extract the nested initramfs
 # We force to overwrite existing files from busybox with '-u'
-zcat rootfs.cgz | fakeroot cpio -vuidm
+zcat rootfs.cgz | sudo cpio -uidm
 
 # The nested initramfs archive can be removed now
 echo $PWD
-fakeroot rm -v rootfs.cgz
+sudo rm -v rootfs.cgz
+
+# Adapt nameserver settings.
+# For now we use the Google NS - sorry.
+sudo rm etc/resolv.conf
+
+sudo tee etc/resolv.conf << EOF
+nameserver 8.8.8.8
+EOF
 
 cd $WORKING_DIRECTORY
 
@@ -85,6 +107,8 @@ cd $WORKING_DIRECTORY
 # now go with just putting the JSON in this file as here-document.
 # So we omit the jq limbo and the dependency to jq.
 
+# We use the same set of capabilities as Docker by default does.
+#https://github.com/moby/moby/blob/master/oci/defaults.go#L14-L30
 cat << EOF > ./config.json
 {
         "ociVersion": "1.0.0",
@@ -104,29 +128,84 @@ cat << EOF > ./config.json
                 "cwd": "/",
                 "capabilities": {
                         "bounding": [
-                                "CAP_AUDIT_WRITE",
+                                "CAP_CHOWN",
+                                "CAP_DAC_OVERRIDE",
+                                "CAP_FSETID",
+                                "CAP_FOWNER",
+                                "CAP_MKNOD",
+                                "CAP_NET_RAW",
+                                "CAP_SETGID",
+                                "CAP_SETUID",
+                                "CAP_SETFCAP",
+                                "CAP_SETPCAP",
+                                "CAP_NET_BIND_SERVICE",
+                                "CAP_SYS_CHROOT",
                                 "CAP_KILL",
-                                "CAP_NET_BIND_SERVICE"
+                                "CAP_AUDIT_WRITE"
                         ],
                         "effective": [
-                                "CAP_AUDIT_WRITE",
+                                "CAP_CHOWN",
+                                "CAP_DAC_OVERRIDE",
+                                "CAP_FSETID",
+                                "CAP_FOWNER",
+                                "CAP_MKNOD",
+                                "CAP_NET_RAW",
+                                "CAP_SETGID",
+                                "CAP_SETUID",
+                                "CAP_SETFCAP",
+                                "CAP_SETPCAP",
+                                "CAP_NET_BIND_SERVICE",
+                                "CAP_SYS_CHROOT",
                                 "CAP_KILL",
-                                "CAP_NET_BIND_SERVICE"
+                                "CAP_AUDIT_WRITE"
                         ],
                         "inheritable": [
-                                "CAP_AUDIT_WRITE",
+                                "CAP_CHOWN",
+                                "CAP_DAC_OVERRIDE",
+                                "CAP_FSETID",
+                                "CAP_FOWNER",
+                                "CAP_MKNOD",
+                                "CAP_NET_RAW",
+                                "CAP_SETGID",
+                                "CAP_SETUID",
+                                "CAP_SETFCAP",
+                                "CAP_SETPCAP",
+                                "CAP_NET_BIND_SERVICE",
+                                "CAP_SYS_CHROOT",
                                 "CAP_KILL",
-                                "CAP_NET_BIND_SERVICE"
+                                "CAP_AUDIT_WRITE"
                         ],
                         "permitted": [
-                                "CAP_AUDIT_WRITE",
+                                "CAP_CHOWN",
+                                "CAP_DAC_OVERRIDE",
+                                "CAP_FSETID",
+                                "CAP_FOWNER",
+                                "CAP_MKNOD",
+                                "CAP_NET_RAW",
+                                "CAP_SETGID",
+                                "CAP_SETUID",
+                                "CAP_SETFCAP",
+                                "CAP_SETPCAP",
+                                "CAP_NET_BIND_SERVICE",
+                                "CAP_SYS_CHROOT",
                                 "CAP_KILL",
-                                "CAP_NET_BIND_SERVICE"
+                                "CAP_AUDIT_WRITE"
                         ],
                         "ambient": [
-                                "CAP_AUDIT_WRITE",
+                                "CAP_CHOWN",
+                                "CAP_DAC_OVERRIDE",
+                                "CAP_FSETID",
+                                "CAP_FOWNER",
+                                "CAP_MKNOD",
+                                "CAP_NET_RAW",
+                                "CAP_SETGID",
+                                "CAP_SETUID",
+                                "CAP_SETFCAP",
+                                "CAP_SETPCAP",
+                                "CAP_NET_BIND_SERVICE",
+                                "CAP_SYS_CHROOT",
                                 "CAP_KILL",
-                                "CAP_NET_BIND_SERVICE"
+                                "CAP_AUDIT_WRITE"
                         ]
                 },
                 "rlimits": [
@@ -217,6 +296,15 @@ cat << EOF > ./config.json
                                 "relatime",
                                 "ro"
                         ]
+                },
+                {
+                        "destination": "/mnt",
+                        "type": "none",
+                        "source": "$BASEDIR",
+                        "options": [
+                                "bind",
+                                "rw"
+                        ]
                 }
         ],
         "linux": {
@@ -278,10 +366,13 @@ sudo brctl addif docker0 cbm-host
 sudo ip netns add coinbootmaker
 sudo ip link set cbm-guest netns coinbootmaker
 
-# This commands can only be executed if the container is already running.
+
+# TODO: We should go rootless: https://github.com/opencontainers/runc/pull/774
 sudo docker-runc run -d coinbootmaker
 
-while ! sudo docker-runc list|grep coinbootmaker; do
+# This commands can only be executed if the container is already running.
+# So let's wait until it is ready.
+while ! sudo docker-runc list | grep coinbootmaker; do
   echo 'Waiting for Coinbootmaker container...'
   sleep 1
 done
@@ -289,7 +380,7 @@ done
 sudo ip netns exec coinbootmaker ip link set cbm-guest name eth0
 sudo ip netns exec coinbootmaker ip addr add 172.17.255.254/16 dev eth0
 sudo ip netns exec coinbootmaker ip link set eth0 up
-#$ sudo ip netns exec coinbootmaker ip route add default via 192.168.10.1
+sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 
 # We are affected by a race condition by the way how 'inotifywait'
 # used in 'create_plugin' uses 'inotify' on recursive directories when
@@ -301,6 +392,8 @@ sudo ip netns exec coinbootmaker ip link set eth0 up
 
 
 sudo docker-runc exec -t coinbootmaker /bin/bash
+# Non-interactive
+#sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src
 
 # Cleanup
 sudo docker-runc kill coinbootmaker KILL
@@ -309,9 +402,6 @@ while ! sudo docker-runc list | grep coinbootmaker | grep stopped; do
   sleep 1
 done
 sudo docker-runc delete coinbootmaker
-
-
-rm -rf $WORKING_DIRECTORY
 
 # Dismantle the networking limbo we have done before.
 sudo ip link delete cbm-host
@@ -323,6 +413,10 @@ sudo ip netns delete coinbootmaker
 #  docker run --rm -it -v "$PWD":/mnt coinbootmaker bash -c 'cd /mnt/build/ && run-parts /mnt/src'
 #fi
 
-echo "Cleaning up $WORKING_DIRECTORY"
-rm -rf $WORKING_DIRECTORY
 
+
+echo "Cleaning up $WORKING_DIRECTORY"
+cd $BASEDIR
+sudo umount -v $WORKING_DIRECTORY
+sudo rm -rf $WORKING_DIRECTORY
+exit
