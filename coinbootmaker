@@ -46,7 +46,7 @@ BASEDIR=$PWD
 INITRAMFS=$(readlink -f $1)
 WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker
 
-
+echo "200000" | sudo tee /proc/sys/fs/inotify/max_user_watches
 
 #while ! sudo docker-runc list | grep coinbootmaker | grep stopped; do
 #  echo 'Waiting for Coinbootmaker container to be stopped ...'
@@ -61,6 +61,11 @@ sudo rm -rf $WORKING_DIRECTORY
 
 
 sudo mkdir $WORKING_DIRECTORY
+# We create our own TMPFS.
+# Beforehand we tried to use '/dev/shm' for our purposes but it is mounted with
+# a 'nosuid' flag so that all commands inside the container that leverage SUID
+# like e.g. 'sudo' are failing.
+# TODO: Check/Define size of TMPFS
 sudo mount -t tmpfs none $WORKING_DIRECTORY
 mkdir -p $WORKING_DIRECTORY/rootfs
 cd $WORKING_DIRECTORY/rootfs
@@ -123,7 +128,8 @@ cat << EOF > ./config.json
                 ],
                 "env": [
                         "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-                        "TERM=xterm"
+                        "TERM=xterm",
+                        "KERNEL_RELEASE=$(echo $INITRAMFS | grep -oP '(?<=coinboot-initramfs-)[^\s]+')"
                 ],
                 "cwd": "/",
                 "capabilities": {
@@ -391,9 +397,11 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 # https://github.com/moby/moby/issues/36120
 
 
-sudo docker-runc exec -t coinbootmaker /bin/bash
-# Non-interactive
-#sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src
+if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
+  sudo docker-runc exec -t coinbootmaker /bin/bash
+else
+  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src'
+fi
 
 # Cleanup
 sudo docker-runc kill coinbootmaker KILL
@@ -407,16 +415,7 @@ sudo docker-runc delete coinbootmaker
 sudo ip link delete cbm-host
 sudo ip netns delete coinbootmaker
 
-#if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
-#  docker run --rm -it -v "$PWD":/mnt coinbootmaker /bin/bash
-#else
-#  docker run --rm -it -v "$PWD":/mnt coinbootmaker bash -c 'cd /mnt/build/ && run-parts /mnt/src'
-#fi
-
-
-
 echo "Cleaning up $WORKING_DIRECTORY"
 cd $BASEDIR
 sudo umount -v $WORKING_DIRECTORY
 sudo rm -rf $WORKING_DIRECTORY
-exit
