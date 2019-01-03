@@ -44,7 +44,10 @@ shift $((OPTIND -1))
 
 BASEDIR=$PWD
 INITRAMFS=$(readlink -f $1)
-WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker
+LOWER=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/lower
+UPPER=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/upper
+WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/working_dir
+MERGED=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/merged
 
 echo "200000" | sudo tee /proc/sys/fs/inotify/max_user_watches
 
@@ -57,18 +60,19 @@ sudo docker-runc kill coinbootmaker KILL || true
 sudo docker-runc delete coinbootmaker || true
 sudo ip link delete cbm-host || true
 sudo ip netns delete coinbootmaker || true
-sudo rm -rf $WORKING_DIRECTORY
+sudo rm -rf $UPPER $LOWER $WORKING_DIRECTORY $MERGED
 
 
-sudo mkdir $WORKING_DIRECTORY
+sudo mkdir -p $UPPER $LOWER $WORKING_DIRECTORY $MERGED
 # We create our own TMPFS.
 # Beforehand we tried to use '/dev/shm' for our purposes but it is mounted with
 # a 'nosuid' flag so that all commands inside the container that leverage SUID
 # like e.g. 'sudo' are failing.
 # TODO: Check/Define size of TMPFS
-sudo mount -t tmpfs none $WORKING_DIRECTORY
-mkdir -p $WORKING_DIRECTORY/rootfs
-cd $WORKING_DIRECTORY/rootfs
+#sudo mount -t tmpfs none $LOWER
+sudo mount -t overlay overlay -o lowerdir=$LOWER,upperdir=$UPPER,workdir=$WORKING_DIRECTORY $MERGED
+mkdir -p $LOWER/rootfs
+cd $LOWER/rootfs
 
 # We have to use 'sudo' for 'cpio' else the ownership of the files in the
 # archive is messed up.
@@ -90,7 +94,11 @@ sudo tee etc/resolv.conf << EOF
 nameserver 8.8.8.8
 EOF
 
-cd $WORKING_DIRECTORY
+sudo tee etc/hosts << EOF
+127.0.1.1 coinbootmaker
+EOF
+
+cd $MERGED
 
 # Generate container spec file config.json
 #docker-runc spec
@@ -396,8 +404,10 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 # the environment variable DOCKER_RAMDISK to be set.
 # https://github.com/moby/moby/issues/36120
 
-
+# FIXME: Copy local version of create_plugin and fluffy in place
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
+  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cp -v /mnt/test/create_plugin /usr/local/bin/'
+  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cp -v /mnt/test/fluffy* /usr/local/bin/'
   sudo docker-runc exec -t coinbootmaker /bin/bash
 else
   sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src'
@@ -415,7 +425,7 @@ sudo docker-runc delete coinbootmaker
 sudo ip link delete cbm-host
 sudo ip netns delete coinbootmaker
 
-echo "Cleaning up $WORKING_DIRECTORY"
+echo "Cleaning up $LOWER"
 cd $BASEDIR
-sudo umount -v $WORKING_DIRECTORY
-sudo rm -rf $WORKING_DIRECTORY
+sudo umount -v $LOWER
+sudo rm -rf $LOWER
