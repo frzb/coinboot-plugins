@@ -425,7 +425,7 @@ sudo docker-runc delete coinbootmaker
 sudo ip link delete cbm-host
 sudo ip netns delete coinbootmaker
 
-echo "Cleaning up $LOWER"
+echo "Cleaning up directories"
 cd $BASEDIR
-sudo umount -v $LOWER
-sudo rm -rf $LOWER
+sudo umount -v $MERGED
+sudo rm -rf $UPPER $LOWER $WORKING_DIRECTORY $MERGED
