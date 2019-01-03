@@ -98,8 +98,6 @@ sudo tee etc/hosts << EOF
 127.0.1.1 coinbootmaker
 EOF
 
-cd $MERGED
-
 # Generate container spec file config.json
 #docker-runc spec
 
@@ -120,6 +118,7 @@ cd $MERGED
 # now go with just putting the JSON in this file as here-document.
 # So we omit the jq limbo and the dependency to jq.
 
+cd $LOWER
 # We use the same set of capabilities as Docker by default does.
 #https://github.com/moby/moby/blob/master/oci/defaults.go#L14-L30
 cat << EOF > ./config.json
@@ -319,6 +318,15 @@ cat << EOF > ./config.json
                                 "bind",
                                 "rw"
                         ]
+                },
+                {
+                        "destination": "/mnt/plugin",
+                        "type": "none",
+                        "source": "$UPPER",
+                        "options": [
+                                "bind",
+                                "ro"
+                        ]
                 }
         ],
         "linux": {
@@ -380,6 +388,7 @@ sudo brctl addif docker0 cbm-host
 sudo ip netns add coinbootmaker
 sudo ip link set cbm-guest netns coinbootmaker
 
+cd $MERGED
 
 # TODO: We should go rootless: https://github.com/opencontainers/runc/pull/774
 sudo docker-runc run -d coinbootmaker
