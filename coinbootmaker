@@ -406,8 +406,6 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 
 # FIXME: Copy local version of create_plugin and fluffy in place
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
-  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cp -v /mnt/test/create_plugin /usr/local/bin/'
-  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cp -v /mnt/test/fluffy* /usr/local/bin/'
   sudo docker-runc exec -t coinbootmaker /bin/bash
 else
   sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src'
