@@ -1,70 +1,36 @@
-#!/bin/bash -e
-set -x
+#!/usr/bin/python3
 
-# Copyright (C) 2018 Gunter Miegel coinboot.io
-#
-# This file is part of Coinboot.
-#
-# Coinboot is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""Create Coinboot Plugins
 
-EXCLUDE='^\/(proc|sys|dev|run|tmp|vagrant|var\/log|usr\/share\/dbus-1\/system-services|var\/lib/\dpkg\/[^info|lock]|var\/cache|.*__pycache__.*).*'
-OUTFILE=/tmp/plugin_file_list
-OUTFILE_FINAL=/tmp/plugin_file_list_final
-DPKG_STATUS=/var/lib/dpkg/status
-INITIAL_DPKG_STATUS=/tmp/initial_status
-FINAL_DPKG_STATUS=/tmp/dpkg_status
-PID_FILE=/tmp/plugin_create_pid
+Usage:
+  create_plugin start
+  create_plugin finish <plugin-name>
 
-function start {
-  cp -v $DPKG_STATUS $INITIAL_DPKG_STATUS
-}
+Options:
+  -h --help     Show this screen.
 
-function finish {
-  plugin_name=$1
+"""
 
-  dpkg_status.py --old $INITIAL_DPKG_STATUS --new $DPKG_STATUS --diff > $FINAL_DPKG_STATUS
+import os
+from docopt import docopt
+from fnmatch import fnmatch
+from subprocess import call
 
-  # Test all collected files if they really exists and if so write them
-  # to a final file list.
-  # Finally add the dpkg_status file we create beforehand.
-  while read path; do
-    if [ -f "$path" ]; then
-      echo $path
-      echo $path >> "$OUTFILE_FINAL"
-    fi
-  done < <(find /mnt/plugin/rootfs | sed 's#/mnt/plugin/rootfs##' | grep -vP $EXCLUDE )
+DPKG_STATUS = '/var/lib/dpkg/status'
+INITIAL_DPKG_STATUS = '/tmp/initial_status'
+FINAL_DPKG_STATUS = '/tmp/dpkg_status'
 
-  echo $FINAL_DPKG_STATUS >> $OUTFILE_FINAL
 
-  tar -czvf $plugin_name.tar.gz -P -T $OUTFILE_FINAL
-}
+def main(arguments):
+    #print(arguments)
+    if arguments['start']:
+         call(['cp', '-v', DPKG_STATUS, INITIAL_DPKG_STATUS])
+    elif arguments['finish']:
+         f = open(FINAL_DPKG_STATUS, 'w')
+         call(['dpkg_status.py', '--old', 'INITIAL_DPKG_STATUS', '--new', 'DPKG_STATUS', '--diff'], stdout=f)
 
-function upload {
-  filepath=$1
-  url=$2
-  filename=$(basename $filepath)
-  curl -F "file=@$filepath;filename=$filename" $url
-}
+if __name__ == '__main__':
+    arguments = docopt(__doc__, version='Crease Coinboot Plugins v0.1')
+    main(arguments)
 
-case "$1" in
-  'start')
-  start
-  ;;
-  'finish')
-  finish $2
-  ;;
-  'upload')
-  upload $2 $3
-  ;;
-esac
+
