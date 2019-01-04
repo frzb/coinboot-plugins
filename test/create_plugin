@@ -20,6 +20,27 @@ DPKG_STATUS = '/var/lib/dpkg/status'
 INITIAL_DPKG_STATUS = '/tmp/initial_status'
 FINAL_DPKG_STATUS = '/tmp/dpkg_status'
 
+exclude = ['/dev', 
+           '/proc',
+           '/run',
+           '/sys',
+           '/tmp',
+           '/usr/share/dbus-1/system-services',
+           '/vagrant',
+           '/var/cache',
+           '/var/lib/dpkg/[^info]',
+           '/var/log',
+           '.*__pycache__.*'
+           ]
+
+
+def find(pathin):
+    """Return results similar to the Unix find command run without options
+    i.e. traverse a directory tree and return all the file paths
+    """
+    return [os.path.join(path, file)
+            for (path, dirs, files) in os.walk(pathin)
+            for file in files]
 
 def main(arguments):
     #print(arguments)
@@ -28,6 +49,11 @@ def main(arguments):
     elif arguments['finish']:
          f = open(FINAL_DPKG_STATUS, 'w')
          call(['dpkg_status.py', '--old', 'INITIAL_DPKG_STATUS', '--new', 'DPKG_STATUS', '--diff'], stdout=f)
+
+         for path in find('/mnt/plugin/rootfs'):
+             if any(fnmatch(path, pattern) for pattern in exclude_list):
+                 print('Ignore', path)
+         continue
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Crease Coinboot Plugins v0.1')
