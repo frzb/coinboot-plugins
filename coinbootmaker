@@ -49,8 +49,6 @@ UPPER=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/upper
 WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/working_dir
 MERGED=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/merged
 
-echo "200000" | sudo tee /proc/sys/fs/inotify/max_user_watches
-
 #while ! sudo docker-runc list | grep coinbootmaker | grep stopped; do
 #  echo 'Waiting for Coinbootmaker container to be stopped ...'
 #  sleep 1
@@ -72,6 +70,8 @@ sudo mkdir -p $UPPER $LOWER $WORKING_DIRECTORY $MERGED
 #sudo mount -t tmpfs none $LOWER
 sudo mount -t overlay overlay -o lowerdir=$LOWER,upperdir=$UPPER,workdir=$WORKING_DIRECTORY $MERGED
 mkdir -p $LOWER/rootfs
+
+# Do some file work in the base/lower directory
 cd $LOWER/rootfs
 
 # We have to use 'sudo' for 'cpio' else the ownership of the files in the
@@ -98,27 +98,18 @@ sudo tee etc/hosts << EOF
 127.0.1.1 coinbootmaker
 EOF
 
+# FIXME: Copy local version of create_plugin.py in place
+if [ ! -f usr/local/bin/create_plugin.py ]; then
+  sudo cp test/create_plugin.py usr/local/bin/create_plugin.py
+fi
+
+cd $LOWER
 # Generate container spec file config.json
-#docker-runc spec
-
-# Allow writes
-# jq can not work inplace - so we use a temporary file instead
-#jq '.root.readonly = "true"' config.json > config.json_tmp
-#mv config.json_tmp config.json
-
-# Assing amespace with path.
-# Watchout for the shell variable 'nspath' handed over jq as a jq varibale.
-#nspath=/var/run/netns/coinbootmaker
-#jq --arg nspath "$nspath" '(.linux.namespaces[] | select(.type == "network") |=. + {"path": $nspath})' config.json > config.json_tmp
-#mv config.json_tmp config.json
-
 # We have to manipulate the config.json created by 'runc spec'.
 # At first I tried to handle this with jq - this was a nice exercise.
 # But we have a further dependency to jq in this case so we
 # now go with just putting the JSON in this file as here-document.
 # So we omit the jq limbo and the dependency to jq.
-
-cd $LOWER
 # We use the same set of capabilities as Docker by default does.
 #https://github.com/moby/moby/blob/master/oci/defaults.go#L14-L30
 cat << EOF > ./config.json
@@ -388,6 +379,7 @@ sudo brctl addif docker0 cbm-host
 sudo ip netns add coinbootmaker
 sudo ip link set cbm-guest netns coinbootmaker
 
+
 cd $MERGED
 
 # TODO: We should go rootless: https://github.com/opencontainers/runc/pull/774
@@ -413,8 +405,8 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 # the environment variable DOCKER_RAMDISK to be set.
 # https://github.com/moby/moby/issues/36120
 
-# FIXME: Copy local version of create_plugin and fluffy in place
-if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
+
+  if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   sudo docker-runc exec -t coinbootmaker /bin/bash
 else
   sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src'
