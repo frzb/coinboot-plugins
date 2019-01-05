@@ -33,7 +33,8 @@ EXCLUDE = ('/dev',
            '/var/cache',
            '/var/lib/dpkg/[^info]',
            '/var/log',
-           '.*__pycache__.*'
+           '.*__pycache__.*',
+           '.wget-hsts'
            )
 
 
