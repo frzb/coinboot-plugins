@@ -62,6 +62,8 @@ def main(arguments):
                 print(' Valid:', path)
                 valid_files.append(path)
 
+        valid_files.append(FINAL_DPKG_STATUS)
+
         tar = tarfile.open(arguments['plugin_name'] + ".tar.gz", "w:gz")
         for path in valid_files:
             tar.add(path)
