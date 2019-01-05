@@ -23,7 +23,7 @@ INITIAL_DPKG_STATUS = '/tmp/initial_status'
 FINAL_DPKG_STATUS = '/tmp/dpkg_status'
 PLUGIN_DIR = '/mnt/plugin/rootfs'
 
-exclude = ('/dev',
+EXLUDE = ('/dev',
            '/proc',
            '/run',
            '/sys',
@@ -56,7 +56,7 @@ def main(arguments):
         valid_files = []
 
         for path in  find(PLUGIN_DIR):
-            if any(re.findall(pattern, path) for pattern in exclude):
+            if any(re.findall(pattern, path) for pattern in EXCLUDE):
                 print('Ignore:', path)
             else:
                 print(' Valid:', path)
@@ -64,8 +64,15 @@ def main(arguments):
 
         valid_files.append(FINAL_DPKG_STATUS)
 
-        tar = tarfile.open(arguments['plugin_name'] + ".tar.gz", "w:gz")
+        files_for_plugin_archive = []
+
         for path in valid_files:
+            cleaned_path = re.sub(PLUGIN_DIR, '', path)
+            print(cleaned_path)
+            files_for_plugin_archive.append(cleaned_path)
+
+        tar = tarfile.open(arguments['plugin_name'] + ".tar.gz", "w:gz")
+        for path in files_for_plugin_archive:
             tar.add(path)
         tar.close()
 
@@ -73,4 +80,3 @@ def main(arguments):
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Create Coinboot Plugins v0.1')
     main(arguments)
-
