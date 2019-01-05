@@ -68,7 +68,7 @@ def main(arguments):
         files_for_plugin_archive = []
 
         for path in valid_files:
-            cleaned_path = re.sub(PLUGIN_DIR, '', path)
+            cleaned_path = re.sub(PLUGIN_DIR, '/', path)
             print(cleaned_path)
             files_for_plugin_archive.append(cleaned_path)
 
