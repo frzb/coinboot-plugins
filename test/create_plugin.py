@@ -13,6 +13,7 @@ Options:
 
 import os
 import tarfile
+import re
 from docopt import docopt
 from fnmatch import fnmatch
 from subprocess import call
@@ -20,8 +21,9 @@ from subprocess import call
 DPKG_STATUS = '/var/lib/dpkg/status'
 INITIAL_DPKG_STATUS = '/tmp/initial_status'
 FINAL_DPKG_STATUS = '/tmp/dpkg_status'
+PLUGIN_DIR = '/mnt/plugin/rootfs'
 
-exclude = ['/dev',
+exclude = ('/dev',
            '/proc',
            '/run',
            '/sys',
@@ -32,7 +34,7 @@ exclude = ['/dev',
            '/var/lib/dpkg/[^info]',
            '/var/log',
            '.*__pycache__.*'
-           ]
+           )
 
 
 def find(pathin):
@@ -51,15 +53,20 @@ def main(arguments):
         f = open(FINAL_DPKG_STATUS, 'w')
         call(['dpkg_status.py', '--old', 'INITIAL_DPKG_STATUS', '--new', 'DPKG_STATUS', '--diff'], stdout=f)
 
-        for path in find('/mnt/plugin/rootfs'):
-            if any(fnmatch(path, pattern) for pattern in exclude):
-                print('Ignore', path)
-        #continue
+        valid_files = []
+
+        for path in  find(PLUGIN_DIR):
+            if any(re.findall(pattern, path) for pattern in exclude):
+                print('Ignore:', path)
+            else:
+                print(' Valid:', path)
+                valid_files.append(path)
 
         tar = tarfile.open("sample.tar.gz", "w:gz")
         for name in ["foo", "bar", "quux"]:
             tar.add(name)
         tar.close()
+
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Create Coinboot Plugins v0.1')
