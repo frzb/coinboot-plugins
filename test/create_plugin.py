@@ -23,7 +23,7 @@ INITIAL_DPKG_STATUS = '/tmp/initial_status'
 FINAL_DPKG_STATUS = '/tmp/dpkg_status'
 PLUGIN_DIR = '/mnt/plugin/rootfs'
 
-EXLUDE = ('/dev',
+EXCLUDE = ('/dev',
            '/proc',
            '/run',
            '/sys',
@@ -46,7 +46,7 @@ def find(pathin):
             for file in files]
 
 def main(arguments):
-    #print(arguments)
+    print(arguments)
     if arguments['start']:
          call(['cp', '-v', DPKG_STATUS, INITIAL_DPKG_STATUS])
     elif arguments['finish']:
@@ -71,7 +71,7 @@ def main(arguments):
             print(cleaned_path)
             files_for_plugin_archive.append(cleaned_path)
 
-        tar = tarfile.open(arguments['plugin_name'] + ".tar.gz", "w:gz")
+        tar = tarfile.open(arguments['<plugin_name>'] + ".tar.gz", "w:gz")
         for path in files_for_plugin_archive:
             tar.add(path)
         tar.close()
