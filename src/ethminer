@@ -13,7 +13,7 @@
 
 # Download and install Ethminer
 
-create_plugin start
+create_plugin.py start
 
 ETHMINER_RELASE=0.16.2
 ETHMINER_ARCHIVE=ethminer-$ETHMINER_RELASE-linux-x86_64.tar.gz
@@ -94,4 +94,4 @@ EOF
 
 chmod a+x "/usr/local/bin/ethminerctl"
 
-create_plugin finish coinboot_$(basename $0)_${ETHMINER_RELASE}_$(date +%Y%m%d.%H%M)
+create_plugin.py finish coinboot_$(basename $0)_${ETHMINER_RELASE}_$(date +%Y%m%d.%H%M)
