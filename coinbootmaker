@@ -69,7 +69,7 @@ sudo mkdir -p $UPPER $LOWER $WORKING_DIRECTORY $MERGED
 # TODO: Check/Define size of TMPFS
 #sudo mount -t tmpfs none $LOWER
 sudo mount -t overlay overlay -o lowerdir=$LOWER,upperdir=$UPPER,workdir=$WORKING_DIRECTORY $MERGED
-mkdir -p $LOWER/rootfs
+sudo mkdir -p $LOWER/rootfs
 
 # Do some file work in the base/lower directory
 cd $LOWER/rootfs
@@ -98,9 +98,13 @@ sudo tee etc/hosts << EOF
 127.0.1.1 coinbootmaker
 EOF
 
-# FIXME: Copy local version of create_plugin.py in place
+# FIXME: Copy local version of create_plugin.py + docopt in place
 if [ ! -f usr/local/bin/create_plugin.py ]; then
-  sudo cp test/create_plugin.py usr/local/bin/create_plugin.py
+  sudo cp $BASEDIR/test/create_plugin.py usr/local/bin/create_plugin.py
+fi
+
+if [ ! -f usr/lib/python3/dist-packages/docopt.py ]; then
+  sudo cp -v /usr/lib/python3/dist-packages/docopt.py usr/lib/python3/dist-packages/docopt.py
 fi
 
 cd $LOWER
@@ -112,7 +116,7 @@ cd $LOWER
 # So we omit the jq limbo and the dependency to jq.
 # We use the same set of capabilities as Docker by default does.
 #https://github.com/moby/moby/blob/master/oci/defaults.go#L14-L30
-cat << EOF > ./config.json
+sudo tee ./config.json << EOF
 {
         "ociVersion": "1.0.0",
         "process": {
