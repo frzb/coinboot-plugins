@@ -4,7 +4,7 @@
 
 Usage:
   create_plugin start
-  create_plugin finish <plugin-name>
+  create_plugin finish <plugin_name>
 
 Options:
   -h --help     Show this screen.
@@ -62,14 +62,13 @@ def main(arguments):
                 print(' Valid:', path)
                 valid_files.append(path)
 
-        tar = tarfile.open("sample.tar.gz", "w:gz")
-        for name in ["foo", "bar", "quux"]:
-            tar.add(name)
+        tar = tarfile.open(arguments['plugin_name'] + ".tar.gz", "w:gz")
+        for path in valid_files:
+            tar.add(path)
         tar.close()
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='Create Coinboot Plugins v0.1')
     main(arguments)
-
 
