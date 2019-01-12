@@ -58,6 +58,9 @@ sudo docker-runc kill coinbootmaker KILL || true
 sudo docker-runc delete coinbootmaker || true
 sudo ip link delete cbm-host || true
 sudo ip netns delete coinbootmaker || true
+if mountpoint $MERGED; then
+  sudo umount $MERGED
+fi
 sudo rm -rf $UPPER $LOWER $WORKING_DIRECTORY $MERGED
 
 
@@ -98,14 +101,8 @@ sudo tee etc/hosts << EOF
 127.0.1.1 coinbootmaker
 EOF
 
-# FIXME: Copy local version of create_plugin.py + docopt in place
-if [ ! -f usr/local/bin/create_plugin.py ]; then
-  sudo cp $BASEDIR/test/create_plugin.py usr/local/bin/create_plugin.py
-fi
-
-if [ ! -f usr/lib/python3/dist-packages/docopt.py ]; then
-  sudo cp -v /usr/lib/python3/dist-packages/docopt.py usr/lib/python3/dist-packages/docopt.py
-fi
+# FIXME: Copy local version of create_plugin.py 
+sudo cp $BASEDIR/test/create_plugin.py usr/local/bin/create_plugin.py
 
 cd $LOWER
 # Generate container spec file config.json
