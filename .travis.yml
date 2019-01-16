@@ -5,7 +5,7 @@ services:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install --yes fakeroot
+  - sudo apt-get install --yes fakeroot bridge-utils
   - wget https://github.com/frzb/coinboot-debirf/releases/download/20180923/coinboot-initramfs-4.4.0-133-generic -P /tmp
 
 script:

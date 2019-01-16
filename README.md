@@ -15,6 +15,10 @@ For more information how to boot your machines with Coinboot visit: https://coin
 
 * Docker if you want to build plugins on your own
 
+* a Debian or Ubuntu build host
+
+* `brctl` which is part of the `bridge-utils` package
+
 ## Usage
 
 ### Pre-built Plugins
