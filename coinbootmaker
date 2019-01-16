@@ -1,7 +1,6 @@
 #!/bin/bash -e
-set -x
 
-# Copyright (C) 2018 Gunter Miegel coinboot.io
+# Copyright (C) 2018, 2019 Gunter Miegel coinboot.io
 #
 # This file is part of Coinboot.
 # This software may be modified and distributed under the terms
@@ -70,7 +69,6 @@ sudo mkdir -p $UPPER $LOWER $WORKING_DIRECTORY $MERGED
 # a 'nosuid' flag so that all commands inside the container that leverage SUID
 # like e.g. 'sudo' are failing.
 # TODO: Check/Define size of TMPFS
-#sudo mount -t tmpfs none $LOWER
 sudo mount -t overlay overlay -o lowerdir=$LOWER,upperdir=$UPPER,workdir=$WORKING_DIRECTORY $MERGED
 sudo mkdir -p $LOWER/rootfs
 
@@ -100,9 +98,6 @@ EOF
 sudo tee etc/hosts << EOF
 127.0.1.1 coinbootmaker
 EOF
-
-# FIXME: Copy local version of create_plugin.py 
-sudo cp $BASEDIR/test/create_plugin.py usr/local/bin/create_plugin.py
 
 cd $LOWER
 # Generate container spec file config.json
@@ -373,13 +368,15 @@ EOF
 # Least effort approch to determine a free und usable adress:
 # Pick the highest available address of the 172.17.0.0. network which is 172.17.255.254/16.
 # There are good chances that this address is unused.
+# TODO: We assume that the default Docker network 172.17.0.0/16 exists.
+# This is pretty naive and we need to handle this better - at least to add
+# exeption handling.
 
 sudo ip link add name cbm-host type veth peer name cbm-guest
 sudo ip link set cbm-host up
 sudo brctl addif docker0 cbm-host
 sudo ip netns add coinbootmaker
 sudo ip link set cbm-guest netns coinbootmaker
-
 
 cd $MERGED
 
@@ -398,16 +395,7 @@ sudo ip netns exec coinbootmaker ip addr add 172.17.255.254/16 dev eth0
 sudo ip netns exec coinbootmaker ip link set eth0 up
 sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 
-# We are affected by a race condition by the way how 'inotifywait'
-# used in 'create_plugin' uses 'inotify' on recursive directories when
-# not running on a superfast storage backend like RAMFS/TMPFS.
-# Leading to random missing files while creating an plugin archive.
-# There was a regression Docker < 18.02 ignoring
-# the environment variable DOCKER_RAMDISK to be set.
-# https://github.com/moby/moby/issues/36120
-
-
-  if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
+if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   sudo docker-runc exec -t coinbootmaker /bin/bash
 else
   sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src'
