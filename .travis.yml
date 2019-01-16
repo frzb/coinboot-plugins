@@ -9,7 +9,7 @@ before_install:
   - wget https://github.com/frzb/coinboot-debirf/releases/download/20190116/coinboot-initramfs-4.15.0-43-generic -P /tmp
 
 script:
-  - ./coinbootmaker /tmp/coinboot-initramfs-4.4.0-133-generic
+  - ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic 
   - ls -la build
 
 deploy:
