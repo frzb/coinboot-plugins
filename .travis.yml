@@ -11,7 +11,7 @@ before_install:
 script:
   - >
     for plugin in $(basename src/*); do
-    ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic -p $plugin
+      ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic -p $plugin
     done
   - ls -la build
 
