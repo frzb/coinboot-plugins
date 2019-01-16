@@ -19,15 +19,18 @@ display_help() {
   echo
   echo 'Usage: coinbootmaker [-i] <path to initramfs>'
   echo
-  echo '-i            Interactive mode - opens a shell in the build environment'
-  echo '-h            Display this help'
+  echo '-i              Interactive mode - opens a shell in the build environment'
+  echo '-p <file name>  Plugin to build'
+  echo '-h              Display this help'
   echo
 }
 
-while getopts "ih" opt; do
+while getopts "ip:h" opt; do
   case $opt in
     i)
       interactive=true
+      ;;
+    p) plugin=$OPTARG
       ;;
     h)
       display_help
@@ -398,7 +401,7 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   sudo docker-runc exec -t coinbootmaker /bin/bash
 else
-  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src'
+  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src/$plugin'
 fi
 
 # Cleanup

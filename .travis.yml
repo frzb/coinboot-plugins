@@ -9,7 +9,10 @@ before_install:
   - wget https://github.com/frzb/coinboot-debirf/releases/download/20190116/coinboot-initramfs-4.15.0-43-generic -P /tmp
 
 script:
-  - ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic 
+  - >
+    for plugin in $(basename src/*); do
+    ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic -p $plugin
+    done
   - ls -la build
 
 deploy:
