@@ -1,4 +1,5 @@
 #!/bin/bash -e
+#set -x
 
 # Copyright (C) 2018, 2019 Gunter Miegel coinboot.io
 #
@@ -30,7 +31,8 @@ while getopts "ip:h" opt; do
     i)
       interactive=true
       ;;
-    p) plugin=$OPTARG
+    p)
+      plugin=$OPTARG
       ;;
     h)
       display_help
@@ -401,7 +403,7 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   sudo docker-runc exec -t coinbootmaker /bin/bash
 else
-  sudo docker-runc exec -t coinbootmaker /bin/bash -c 'cd /mnt/build/ && run-parts /mnt/src/$plugin'
+  sudo docker-runc exec -t coinbootmaker /bin/bash -c "cd /mnt/build/ && /mnt/src/$plugin"
 fi
 
 # Cleanup
