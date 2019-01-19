@@ -5,11 +5,14 @@ services:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install --yes fakeroot
-  - wget https://github.com/frzb/coinboot-debirf/releases/download/20180923/coinboot-initramfs-4.4.0-133-generic -P /tmp
+  - sudo apt-get install --yes fakeroot bridge-utils
+  - wget https://github.com/frzb/coinboot-debirf/releases/download/20190116/coinboot-initramfs-4.15.0-43-generic -P /tmp
 
 script:
-  - ./coinbootmaker /tmp/coinboot-initramfs-4.4.0-133-generic
+  - >
+    for plugin in src/*; do
+      ./coinbootmaker -p $(basename $plugin) /tmp/coinboot-initramfs-4.15.0-43-generic
+    done
   - ls -la build
 
 deploy:

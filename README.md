@@ -15,6 +15,10 @@ For more information how to boot your machines with Coinboot visit: https://coin
 
 * Docker if you want to build plugins on your own
 
+* a Debian or Ubuntu build host
+
+* `brctl` which is part of the `bridge-utils` package
+
 ## Usage
 
 ### Pre-built Plugins
@@ -22,7 +26,7 @@ For more information how to boot your machines with Coinboot visit: https://coin
 Put the pre-built plugins of your choice that your can download under [releases](https://github.com/frzb/coinboot-plugins/releases)
 into the `plugins` directory of your Coinboot setup.
 
-### Build the Plugins
+### Coinbootmaker - build the Plugins
 
 To build Coinboot plugins on your own use `coinbootmaker`.
 
@@ -33,11 +37,11 @@ $ ./coinbootmaker <path to Coinboot Initramfs>
 For example:
 
 ```
-$ ./coinbootmaker /tmp/coinboot-initramfs-4.4.0-133-generic  
+$ ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic  
 ```
 
 `coinbootmaker` takes a path to a Coinboot-Initramfs to create an environment for building the plugins  
-by converting the given Initramfs into a Docker container image.  
+by converting the given Initramfs into a Container image and run it.  
 All plugin scripts located at `src` are than executed in that `coinbootmaker` container and the resulting  
 plugin archives are written to the `build` directory.
 
