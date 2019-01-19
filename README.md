@@ -9,11 +9,11 @@ It also contains `coinbootmaker` - a little helper to build your own Coinboot pl
   
 For more information how to boot your machines with Coinboot visit: https://coinboot.io
 
-## Requirements 
+## Requirements
 
-* A running Coinboot setup
+### If you want to build plugins on your own: 
 
-* Docker if you want to build plugins on your own
+* Docker 
 
 * a Debian or Ubuntu build host
 
@@ -31,19 +31,23 @@ into the `plugins` directory of your Coinboot setup.
 To build Coinboot plugins on your own use `coinbootmaker`.
 
 ```
-$ ./coinbootmaker <path to Coinboot Initramfs>
+Usage: coinbootmaker [-i] -p <file name> <path to initramfs>                                                          
+
+-i              Interactive mode - opens a shell in the build environment                                             
+-p <file name>  Plugin to build
+-h              Display this help
 ```
 
 For example:
 
 ```
-$ ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic  
+$ ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic -p ethminer 
 ```
 
 `coinbootmaker` takes a path to a Coinboot-Initramfs to create an environment for building the plugins  
 by converting the given Initramfs into a Container image and run it.  
-All plugin scripts located at `src` are than executed in that `coinbootmaker` container and the resulting  
-plugin archives are written to the `build` directory.
+The plugin creation script located at `src` is executed in that `coinbootmaker` container and the resulting  
+plugin archive is written to the `build` directory.
 
 ## License
 

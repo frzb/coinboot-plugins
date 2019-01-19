@@ -14,11 +14,9 @@ display_help() {
   echo 'Coinbootmaker creates an environment for building Coinboot plugins from a'
   echo 'given Coinboot Initramfs.'
   echo
-  echo 'When no arguments beside the path to a Coinboot Initramfs is supplied'
-  echo 'Coinbootmaker automatically builds all plugins from the ./src directory.'
   echo 'Packaged Coinboot pluings are written to the ./builds directory'
   echo
-  echo 'Usage: coinbootmaker [-i] <path to initramfs>'
+  echo 'Usage: coinbootmaker [-i] [-h] -p <file name> <path to initramfs> '
   echo
   echo '-i              Interactive mode - opens a shell in the build environment'
   echo '-p <file name>  Plugin to build'
