@@ -21,13 +21,17 @@ display_help() {
   echo '-i              Interactive mode - opens a shell in the build environment'
   echo '-p <file name>  Plugin to build'
   echo '-h              Display this help'
+  echo '-s              Build plugin with Squashfs'
   echo
 }
 
-while getopts "ip:h" opt; do
+while getopts "isp:h" opt; do
   case $opt in
     i)
       interactive=true
+      ;;
+    s)
+      squashfs=true
       ;;
     p)
       plugin=$OPTARG
@@ -51,13 +55,13 @@ UPPER=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/upper
 WORKING_DIRECTORY=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/working_dir
 MERGED=/tmp/$(basename $INITRAMFS)_extracted_by_coinbootmaker/merged
 
-#while ! sudo docker-runc list | grep coinbootmaker | grep stopped; do
+#while ! sudo runc list | grep coinbootmaker | grep stopped; do
 #  echo 'Waiting for Coinbootmaker container to be stopped ...'
 #  sleep 1
 #done
-#sudo docker-runc delete coinbootmaker
-sudo docker-runc kill coinbootmaker KILL || true
-sudo docker-runc delete coinbootmaker || true
+#sudo runc delete coinbootmaker
+sudo runc kill coinbootmaker KILL || true
+sudo runc delete coinbootmaker || true
 sudo ip link delete cbm-host || true
 sudo ip netns delete coinbootmaker || true
 if mountpoint $MERGED; then
@@ -384,11 +388,11 @@ sudo ip link set cbm-guest netns coinbootmaker
 cd $MERGED
 
 # TODO: We should go rootless: https://github.com/opencontainers/runc/pull/774
-sudo docker-runc run -d coinbootmaker
+sudo runc run -d coinbootmaker
 
 # This commands can only be executed if the container is already running.
 # So let's wait until it is ready.
-while ! sudo docker-runc list | grep coinbootmaker; do
+while ! sudo runc list | grep coinbootmaker; do
   echo 'Waiting for Coinbootmaker container...'
   sleep 1
 done
@@ -399,18 +403,18 @@ sudo ip netns exec coinbootmaker ip link set eth0 up
 sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
-  sudo docker-runc exec -t coinbootmaker /bin/bash
+  sudo runc exec -t coinbootmaker /bin/bash
 else
-  sudo docker-runc exec -t coinbootmaker /bin/bash -c "cd /mnt/build/ && /mnt/src/$plugin"
+  sudo runc exec -t coinbootmaker /bin/bash -c "cd /mnt/build/ && /mnt/src/$plugin"
 fi
 
 # Cleanup
-sudo docker-runc kill coinbootmaker KILL
-while ! sudo docker-runc list | grep coinbootmaker | grep stopped; do
+sudo runc kill coinbootmaker KILL
+while ! sudo runc list | grep coinbootmaker | grep stopped; do
   echo 'Waiting for Coinbootmaker container to be stopped ...'
   sleep 1
 done
-sudo docker-runc delete coinbootmaker
+sudo runc delete coinbootmaker
 
 # Dismantle the networking limbo we have done before.
 sudo ip link delete cbm-host
