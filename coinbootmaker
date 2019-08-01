@@ -126,7 +126,8 @@ sudo tee ./config.json << EOF
                 "env": [
                         "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
                         "TERM=xterm",
-                        "KERNEL_RELEASE=$(echo $INITRAMFS | grep -oP '(?<=coinboot-initramfs-)[^\s]+')"
+                        "KERNEL_RELEASE=$(echo $INITRAMFS | grep -oP '(?<=coinboot-initramfs-)[^\s]+')",
+                        "LC_ALL=en_US.UTF-8"
                 ],
                 "cwd": "/",
                 "capabilities": {
