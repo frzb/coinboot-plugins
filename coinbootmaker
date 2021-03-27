@@ -1,5 +1,4 @@
 #!/bin/bash -e
-set -x
 
 # Copyright (C) 2018 - 2021 Gunter Miegel coinboot.io
 #
@@ -135,23 +134,15 @@ cd $LOWER/rootfs
 
 # We have to use 'sudo' for 'cpio' else the ownership of the files in the
 # archive is messed up.
-zcat $CACHE_DIR/$INITRAMFS | sudo cpio -idm
-
-# Now we extract the nested initramfs
-# Before we have to clean up the directories /bin and /sbin because these
-# are symlinks due to usrmerge.
-sudo rm -rvf bin sbin lib 
-zcat rootfs.cgz | sudo cpio -idm
+# We just extract the nested initramfs archive
+zcat $CACHE_DIR/$INITRAMFS | sudo cpio -idvm "rootfs.cgz"
+zcat rootfs.cgz | sudo cpio -idvm
 
 # The nested initramfs archive can be removed now
-echo $PWD
 sudo rm -v rootfs.cgz
 
 # Adapt nameserver settings.
-# For now we use the Google NS - sorry.
-sudo rm etc/resolv.conf
-
-sudo tee etc/resolv.conf << EOF
+sudo tee etc/resolv.conf < EOF
 nameserver 1.1.1.1
 EOF
 
