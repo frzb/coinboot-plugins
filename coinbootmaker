@@ -142,7 +142,9 @@ zcat rootfs.cgz | sudo cpio -idvm
 sudo rm -v rootfs.cgz
 
 # Adapt nameserver settings.
-sudo tee etc/resolv.conf < EOF
+# resolv.conf is a symling to the systemd stub resolver which we have to delete beforehand.
+sudo rm etc/resolv.conf
+sudo tee etc/resolv.conf << EOF
 nameserver 1.1.1.1
 EOF
 
