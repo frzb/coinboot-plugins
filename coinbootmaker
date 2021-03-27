@@ -1,5 +1,5 @@
 #!/bin/bash -e
-#set -x
+set -x
 
 # Copyright (C) 2018 - 2021 Gunter Miegel coinboot.io
 #
@@ -138,8 +138,10 @@ cd $LOWER/rootfs
 zcat $CACHE_DIR/$INITRAMFS | sudo cpio -idm
 
 # Now we extract the nested initramfs
-# We force to overwrite existing files from busybox with '-u'
-zcat rootfs.cgz | sudo cpio -uidm
+# Before we have to clean up the directories /bin and /sbin because these
+# are symlinks due to usrmerge.
+sudo rm -rvf bin sbin lib 
+zcat rootfs.cgz | sudo cpio -idm
 
 # The nested initramfs archive can be removed now
 echo $PWD
@@ -175,8 +177,7 @@ sudo tee ./config.json << EOF
                         "uid": 0,
                         "gid": 0
                 },
-                "args": [
-                        "/bin/sleep", "999d"
+                "args": ["/usr/bin/sleep", "infinity"
                 ],
                 "env": [
                         "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
