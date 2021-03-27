@@ -1,5 +1,4 @@
 #!/bin/bash -e
-#set -x
 
 # Copyright (C) 2018 - 2021 Gunter Miegel coinboot.io
 #
@@ -135,20 +134,16 @@ cd $LOWER/rootfs
 
 # We have to use 'sudo' for 'cpio' else the ownership of the files in the
 # archive is messed up.
-zcat $CACHE_DIR/$INITRAMFS | sudo cpio -idm
-
-# Now we extract the nested initramfs
-# We force to overwrite existing files from busybox with '-u'
-zcat rootfs.cgz | sudo cpio -uidm
+# We just extract the nested initramfs archive
+zcat $CACHE_DIR/$INITRAMFS | sudo cpio -idvm "rootfs.cgz"
+zcat rootfs.cgz | sudo cpio -idvm
 
 # The nested initramfs archive can be removed now
-echo $PWD
 sudo rm -v rootfs.cgz
 
 # Adapt nameserver settings.
-# For now we use the Google NS - sorry.
+# resolv.conf is a symling to the systemd stub resolver which we have to delete beforehand.
 sudo rm etc/resolv.conf
-
 sudo tee etc/resolv.conf << EOF
 nameserver 1.1.1.1
 EOF
@@ -175,8 +170,7 @@ sudo tee ./config.json << EOF
                         "uid": 0,
                         "gid": 0
                 },
-                "args": [
-                        "/bin/sleep", "999d"
+                "args": ["/usr/bin/sleep", "infinity"
                 ],
                 "env": [
                         "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
