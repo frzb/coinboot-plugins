@@ -127,4 +127,7 @@ sudo apt-get purge --yes gcc libc-dev libc6-dev cpp linux-headers-$KERNEL_RELEAS
 #sudo apt-get purge --yes linux-headers-$KERNEL_RELEASE file libmagic1
 sudo apt autoremove -y
 
+# Remove mocked update-initramfs
+sudo rm -v /usr/bin/update-initramfs
+
 create_plugin.py finish coinboot-$AMDGPU_PRO_VERSION-$KERNEL_RELEASE
