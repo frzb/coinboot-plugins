@@ -122,8 +122,9 @@ sudo depmod  $KERNEL_RELEASE
 
 # Additional packages which can be removed to save space.
 # TODO: Removing of libc-dev and libc6-dev should save even more space.
-#sudo apt-get purge --yes gcc libc-dev libc6-dev cpp-5 libgcc-5-dev linux-headers-$KERNEL_RELEASE linux-headers* file libmagic1
+sudo apt-get purge --yes gcc libc-dev libc6-dev cpp linux-headers-$KERNEL_RELEASE linux-headers* file libmagic1
 #sudo apt-get purge --yes gcc cpp-5 libgcc-5-dev linux-headers-$KERNEL_RELEASE file libmagic1
-sudo apt-get purge --yes linux-headers-$KERNEL_RELEASE file libmagic1
+#sudo apt-get purge --yes linux-headers-$KERNEL_RELEASE file libmagic1
+sudo apt autoremove -y
 
 create_plugin.py finish coinboot-$AMDGPU_PRO_VERSION-$KERNEL_RELEASE
