@@ -14,6 +14,7 @@ set -x
 
 # Create a plugin archive with the amdgpu-pro driver.
 
+sudo apt update
 
 AMDGPU_PRO_VERSION=amdgpu-pro-20.50-1234664-ubuntu-20.04
 #https://drivers.amd.com/drivers/linux/amdgpu-pro-20.50-1234664-ubuntu-20.04.tar.xz
@@ -29,9 +30,14 @@ AMDGPU_OPENCL_PACKAGES='libopencl1-amdgpu-pro clinfo-amdgpu-pro opencl-orca-amdg
 # The DKMS package is installed explictily to purge it without wiping the dependcies.
 AMDGPU_DKMS_PACKAGE='amdgpu-dkms'
 AMDGPU_PRO_CACHE_PATH=/mnt/cache/amdgpu-pro
+EXTRA_MODULES_PACKAGE="linux-modules-extra-$KERNEL_RELEASE"
+EXTRA_MODULES_PACKAGE_FILE=$(apt-cache show $EXTRA_MODULES_PACKAGE | grep -oP $EXTRA_MODULES_PACKAGE.*deb)
 
-sudo apt-get update
+#  amdgpu-core amdgpu-dkms-firmware amdgpu-pro-core libdrm-amdgpu-amdgpu1 libdrm-amdgpu-common libdrm2-amdgpu
+#  ocl-icd-libopencl1-amdgpu-pro
 
+#  amdgpu-core amdgpu-dkms amdgpu-dkms-firmware amdgpu-pro-core clinfo-amdgpu-pro libdrm-amdgpu-amdgpu1 libdrm-amdgpu-common
+#  libdrm2-amdgpu ocl-icd-libopencl1-amdgpu-pro opencl-orca-amdgpu-pro-icd
 
 sudo apt-get install $PACKAGES --yes
 
@@ -103,6 +109,22 @@ sudo rm -rvf /tmp/$AMDGPU_PRO_VERSION \
 # As the DKMS package is a dependcy of 'opencl-amdgpu-pro' we set it on hold
 # to keep the OpenCL stuff while we dump the DKMS package.
 
+# The module amdgpu.ko requires amd_iommu_v2.ko which comes with the linux-modules-extra-
+sudo apt-get download "$EXTRA_MODULES_PACKAGE"
+
+# FIXME: Remove the hardwired deb file.
+# dpkg-deb -x needs a full path!
+sudo dpkg -x $PWD/$EXTRA_MODULES_PACKAGE_FILE /tmp/
+sudo rm -rf $PWD/$EXTRA_MODULES_PACKAGE_FILE
+
+sudo install -Dv /tmp/lib/modules/"$KERNEL_RELEASE"/kernel/drivers/iommu/amd_iommu_v2.ko /lib/modules/"$KERNEL_RELEASE"/kernel/drivers/iommu/amd_iommu_v2.ko
+sudo rm -rf /tmp/lib
+
+sudo cp -v /lib/modules/"$KERNEL_RELEASE"/updates/dkms/amd* /tmp/
+
+sudo cp -Rv /lib/firmware /tmp/
+
+
 sudo apt-get purge $PACKAGES --yes
 
 #sudo apt-get autoremove --yes
@@ -113,9 +135,6 @@ sudo apt-get purge $PACKAGES --yes
 # TODO: Remove hardwired source directory
 sudo rm -rf /usr/src/$AMDGPU_PRO_VERSION
 
-# 'debirf_exec depmod -av' fails ('permission denied') so using 'chroot' once more.
-#sudo chroot /tmp/minimal/root depmod -av
-sudo depmod  $KERNEL_RELEASE
 
 # Clean up /var/lib/dkms (~ 135M)
 #sudo rm -rf /var/lib/dkms
@@ -127,7 +146,21 @@ sudo apt-get purge --yes gcc libc-dev libc6-dev cpp linux-headers-$KERNEL_RELEAS
 #sudo apt-get purge --yes linux-headers-$KERNEL_RELEASE file libmagic1
 sudo apt autoremove -y
 
+sudo cp -v /tmp/amd* /lib/modules/"$KERNEL_RELEASE"/updates/dkms/
+sudo cp -Rv /tmp/firmware /lib/
+
+sudo depmod $KERNEL_RELEASE
+
 # Remove mocked update-initramfs
 sudo rm -v /usr/bin/update-initramfs
+
+#./amdgpu-install --opencl=legacy --no-32 --headless
+
+#DEST_MODULE_LOCATION[0]="/kernel/drivers/gpu/drm/amd/amdgpu"
+#DEST_MODULE_LOCATION[1]="/kernel/drivers/gpu/drm/ttm"
+#DEST_MODULE_LOCATION[2]="/kernel/drivers/gpu/drm/amd/amdkcl"
+#DEST_MODULE_LOCATION[3]="/kernel/drivers/gpu/drm/scheduler"
+
+
 
 create_plugin.py finish coinboot-$AMDGPU_PRO_VERSION-$KERNEL_RELEASE
