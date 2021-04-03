@@ -16,6 +16,7 @@ set -x
 
 sudo apt update
 
+GPU_CODENAME=polaris
 AMDGPU_PRO_VERSION=amdgpu-pro-20.50-1234664-ubuntu-20.04
 #https://drivers.amd.com/drivers/linux/amdgpu-pro-20.50-1234664-ubuntu-20.04.tar.xz
 AMDGPU_PRO_ARCHIVE=$AMDGPU_PRO_VERSION.tar.xz
@@ -32,12 +33,6 @@ AMDGPU_DKMS_PACKAGE='amdgpu-dkms'
 AMDGPU_PRO_CACHE_PATH=/mnt/cache/amdgpu-pro
 EXTRA_MODULES_PACKAGE="linux-modules-extra-$KERNEL_RELEASE"
 EXTRA_MODULES_PACKAGE_FILE=$(apt-cache show $EXTRA_MODULES_PACKAGE | grep -oP $EXTRA_MODULES_PACKAGE.*deb)
-
-#  amdgpu-core amdgpu-dkms-firmware amdgpu-pro-core libdrm-amdgpu-amdgpu1 libdrm-amdgpu-common libdrm2-amdgpu
-#  ocl-icd-libopencl1-amdgpu-pro
-
-#  amdgpu-core amdgpu-dkms amdgpu-dkms-firmware amdgpu-pro-core clinfo-amdgpu-pro libdrm-amdgpu-amdgpu1 libdrm-amdgpu-common
-#  libdrm2-amdgpu ocl-icd-libopencl1-amdgpu-pro opencl-orca-amdgpu-pro-icd
 
 sudo apt-get install $PACKAGES --yes
 
@@ -93,7 +88,7 @@ create_plugin.py start
 
 # FIXME: /opt/amdgpu-pro/lib/x86_64-linux-gnu/libOpenCL.so.1 missing when installing
 # $AMDGPU_DKMS_PACKAGE and $AMDGPU_OPENCL_PACKAGES at once.
-#sudo apt-get install --yes $AMDGPU_OPENCL_PACKAGES $AMDGPU_DKMS_PACKAGE
+# sudo apt-get install --yes $AMDGPU_OPENCL_PACKAGES $AMDGPU_DKMS_PACKAGE
 sudo apt-get install --yes $AMDGPU_OPENCL_PACKAGES
 sudo apt-get install --yes $AMDGPU_DKMS_PACKAGE
 
@@ -124,11 +119,7 @@ sudo cp -v /lib/modules/"$KERNEL_RELEASE"/updates/dkms/amd* /tmp/
 
 sudo cp -Rv /lib/firmware /tmp/
 
-
 sudo apt-get purge $PACKAGES --yes
-
-#sudo apt-get autoremove --yes
-#sudo apt-get autoclean --yes
 
 # As removing the DKMS package ends in a dependcy mess
 # so we just remove the source directory under '/usr/src'.
@@ -142,12 +133,13 @@ sudo rm -rf /usr/src/$AMDGPU_PRO_VERSION
 # Additional packages which can be removed to save space.
 # TODO: Removing of libc-dev and libc6-dev should save even more space.
 sudo apt-get purge --yes gcc libc-dev libc6-dev cpp linux-headers-$KERNEL_RELEASE linux-headers* file libmagic1
-#sudo apt-get purge --yes gcc cpp-5 libgcc-5-dev linux-headers-$KERNEL_RELEASE file libmagic1
-#sudo apt-get purge --yes linux-headers-$KERNEL_RELEASE file libmagic1
-sudo apt autoremove -y
+sudo apt autoremove -yes
 
 sudo cp -v /tmp/amd* /lib/modules/"$KERNEL_RELEASE"/updates/dkms/
 sudo cp -Rv /tmp/firmware /lib/
+
+sudo mkdir -p /lib/firmware/updates/amdgpu
+sudo find /tmp/firware -name "$GPU_CODENAME*" -exec cp -v {} /lib/firmware/updates/amdgpu/ \;
 
 sudo depmod $KERNEL_RELEASE
 
