@@ -15,7 +15,7 @@ display_help() {
   echo
   echo 'Packaged Coinboot pluings are written to the ./builds directory'
   echo
-  echo 'Usage: coinbootmaker [-i] [-h] [-p <plugin name> <path to initramfs>]'
+  echo 'Usage: coinbootmaker [-i] [-h] [-l] [-p <plugin name> <path to initramfs>]'
   echo
   echo '-i              Interactive mode - opens a shell in the build environment'
   echo '-p <file name>  Plugin to build'
