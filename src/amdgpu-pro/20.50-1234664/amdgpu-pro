@@ -16,6 +16,10 @@ set -x
 
 sudo apt update
 
+# Specfiy AMD Radeon GPU series codename.
+# RX 400/500 series: polaris
+# RX Vega series: vega
+# RX 5000/6000 series: navi
 GPU_CODENAME=polaris
 AMDGPU_PRO_VERSION=amdgpu-pro-20.50-1234664-ubuntu-20.04
 #https://drivers.amd.com/drivers/linux/amdgpu-pro-20.50-1234664-ubuntu-20.04.tar.xz
@@ -146,13 +150,4 @@ sudo depmod $KERNEL_RELEASE
 # Remove mocked update-initramfs
 sudo rm -v /usr/bin/update-initramfs
 
-#./amdgpu-install --opencl=legacy --no-32 --headless
-
-#DEST_MODULE_LOCATION[0]="/kernel/drivers/gpu/drm/amd/amdgpu"
-#DEST_MODULE_LOCATION[1]="/kernel/drivers/gpu/drm/ttm"
-#DEST_MODULE_LOCATION[2]="/kernel/drivers/gpu/drm/amd/amdkcl"
-#DEST_MODULE_LOCATION[3]="/kernel/drivers/gpu/drm/scheduler"
-
-
-
-create_plugin.py finish coinboot-$AMDGPU_PRO_VERSION-$KERNEL_RELEASE
+create_plugin.py finish coinboot-$AMDGPU_PRO_VERSION-$KERNEL_RELEASE-$GPU_CODENAME
