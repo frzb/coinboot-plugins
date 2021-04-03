@@ -47,6 +47,8 @@ else
   echo "teamredminer $TEAMREDMINER_RELASE kernels are already copied to the chroot."
 fi
 
+
+# TODO: Configure API for monitoring
 cat <<'EOF' > "/etc/systemd/system/teamredminer.service"
 [Unit]
 Description=teamredminer Ethereum Minining Software
@@ -54,11 +56,11 @@ After=network-online.target
 
 [Service]
 EnvironmentFile=/etc/environment
-ExecStart=/usr/local/bin/teamredminer -R --HWMON 1 -G \
--P stratum1+tcp://${ETHEREUM_ADDRESS}.%H@eu1.ethermine.org:4444 \
--P stratum1+tcp://${ETHEREUM_ADDRESS}.%H@eu1.ethermine.org:14444 \
--P stratum1+tcp://${ETHEREUM_ADDRESS}.%H@us1.ethermine.org:4444 \
--P stratum1+tcp://${ETHEREUM_ADDRESS}.%H@asia1.ethermine.org:4444
+ExecStart=/usr/local/bin/teamredminer -a ethash \
+-o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@eu1.ethermine.org:4444 \
+-o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@eu1.ethermine.org:14444 \
+-o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@us1.ethermine.org:4444 \
+-o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@asia1.ethermine.org:4444
 Restart=on-failure
 
 [Install]
