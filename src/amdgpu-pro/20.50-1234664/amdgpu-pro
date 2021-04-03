@@ -137,7 +137,7 @@ sudo rm -rf /usr/src/$AMDGPU_PRO_VERSION
 # Additional packages which can be removed to save space.
 # TODO: Removing of libc-dev and libc6-dev should save even more space.
 sudo apt-get purge --yes gcc libc-dev libc6-dev cpp linux-headers-$KERNEL_RELEASE linux-headers* file libmagic1
-sudo apt autoremove -yes
+sudo apt autoremove --yes
 
 sudo cp -v /tmp/amd* /lib/modules/"$KERNEL_RELEASE"/updates/dkms/
 sudo cp -Rv /tmp/firmware /lib/
