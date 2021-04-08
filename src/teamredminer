@@ -15,9 +15,9 @@
 
 create_plugin.py start
 
-TEAMREDMINER_RELASE=0.8.1.1
-TEAMREDMINER_ARCHIVE=teamredminer-v$TEAMREDMINER_RELASE-linux.tgz
-TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/$TEAMREDMINER_RELASE/$TEAMREDMINER_ARCHIVE
+TEAMREDMINER_RELEASE=0.8.1.1
+TEAMREDMINER_ARCHIVE=teamredminer-v$TEAMREDMINER_RELEASE-linux.tgz
+TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/$TEAMREDMINER_RELEASE/$TEAMREDMINER_ARCHIVE
 WGET='wget'
 
 apt install $WGET --yes --no-install-recommends
@@ -29,24 +29,17 @@ else
   echo "$TEAMREDMINER_ARCHIVE is already downloaded."
 fi
 
-if ! [ -f /tmp/$TEAMREDMINER_RELASE ]; then
+if ! [ -f /tmp/$TEAMREDMINER_RELEASE ]; then
   tar -zxvf /tmp/$TEAMREDMINER_ARCHIVE -C /tmp
 else
   echo "$TEAMREDMINER_ARCHIVE is already decompressed."
 fi
 
 if ! [ -f "/usr/local/bin/teamredminer" ]; then
- cp -r "/tmp/bin/teamredminer" "/usr/local/bin/"
+ cp -r "/tmp/teamredminer-v$TEAMREDMINER_RELEASE-linux/teamredminer" "/usr/local/bin/"
 else
-  echo "teamredminer $TEAMREDMINER_RELASE binary is already copied to the chroot."
+  echo "teamredminer $TEAMREDMINER_RELEASE binary is already copied to the chroot."
 fi
-
-if ! [ -d "/usr/local/bin/kernels" ]; then
- cp -r "/tmp/bin/kernels" "/usr/local/bin/"
-else
-  echo "teamredminer $TEAMREDMINER_RELASE kernels are already copied to the chroot."
-fi
-
 
 # TODO: Configure API for monitoring
 cat <<'EOF' > "/etc/systemd/system/teamredminer.service"
@@ -95,4 +88,4 @@ EOF
 
 chmod a+x "/usr/local/bin/teamredminerctl"
 
-create_plugin.py finish coinboot_$(basename $0)_${TEAMREDMINER_RELASE}_$(date +%Y%m%d.%H%M)
+create_plugin.py finish coinboot_$(basename $0)_${TEAMREDMINER_RELEASE}_$(date +%Y%m%d.%H%M)
