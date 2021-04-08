@@ -47,13 +47,19 @@ cat <<'EOF' > "/etc/systemd/system/teamredminer.service"
 Description=teamredminer Ethereum Minining Software
 After=network-online.target
 
+
 [Service]
 EnvironmentFile=/etc/environment
 ExecStart=/usr/local/bin/teamredminer -a ethash \
--o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@eu1.ethermine.org:4444 \
--o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@eu1.ethermine.org:14444 \
--o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@us1.ethermine.org:4444 \
--o stratum1+tcp://${ETHEREUM_ADDRESS}.%H@asia1.ethermine.org:4444
+-o stratum+tcp://us1.ethermine.org:4444 \
+-u ${ETHEREUM_ADDRESS} \
+-o stratum+tcp://eu1.ethermine.org:4444 \
+-u ${ETHEREUM_ADDRESS} \
+-o stratum+tcp://eu1.ethermine.org:14444 \
+-u ${ETHEREUM_ADDRESS} \
+-o stratum+tcp://asia1.ethermine.org:4444 \
+-u ${ETHEREUM_ADDRESS} \
+--eth_worker=%H
 Restart=on-failure
 
 [Install]
