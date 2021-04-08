@@ -16,8 +16,8 @@
 create_plugin.py start
 
 TEAMREDMINER_RELASE=0.8.1.1
-TEAMREDMINER_ARCHIVE=teamredminer-v$TEAMREDMINER_RELASE-linux.tar.gz
-TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/v$TEAMREDMINER_RELASE/$TEAMREDMINER_ARCHIVE
+TEAMREDMINER_ARCHIVE=teamredminer-v$TEAMREDMINER_RELASE-linux.tgz
+TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/$TEAMREDMINER_RELASE/$TEAMREDMINER_ARCHIVE
 WGET='wget'
 
 apt install $WGET --yes --no-install-recommends
