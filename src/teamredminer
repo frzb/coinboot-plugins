@@ -59,6 +59,7 @@ ExecStart=/usr/local/bin/teamredminer -a ethash \
 -u ${ETHEREUM_ADDRESS}.%H \
 -o stratum+tcp://asia1.ethermine.org:4444 \
 -u ${ETHEREUM_ADDRESS}.%H \
+--api_listen=127.0.0.1:4028
 Restart=on-failure
 
 [Install]
