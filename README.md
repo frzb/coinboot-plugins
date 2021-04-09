@@ -31,17 +31,18 @@ into the `plugins` directory of your Coinboot setup.
 To build Coinboot plugins on your own use `coinbootmaker`.
 
 ```
-Usage: coinbootmaker [-i] -p <file name> <path to initramfs>                                                          
+Usage: coinbootmaker [-i] [-l] [-h] [-p <plugin name> <path to initramfs>]
 
--i              Interactive mode - opens a shell in the build environment                                             
+-i              Interactive mode - opens a shell in the build environment
 -p <file name>  Plugin to build
+-l              List plugins available to build
 -h              Display this help
 ```
 
 For example:
 
 ```
-$ ./coinbootmaker /tmp/coinboot-initramfs-4.15.0-43-generic -p ethminer 
+$ ./coinbootmaker -p ethminer /tmp/coinboot-initramfs-4.15.0-43-generic  
 ```
 
 `coinbootmaker` takes a path to a Coinboot-Initramfs to create an environment for building the plugins  
