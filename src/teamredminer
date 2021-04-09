@@ -52,14 +52,13 @@ After=network-online.target
 EnvironmentFile=/etc/environment
 ExecStart=/usr/local/bin/teamredminer -a ethash \
 -o stratum+tcp://us1.ethermine.org:4444 \
--u ${ETHEREUM_ADDRESS} \
+-u ${ETHEREUM_ADDRESS}.%H \
 -o stratum+tcp://eu1.ethermine.org:4444 \
--u ${ETHEREUM_ADDRESS} \
+-u ${ETHEREUM_ADDRESS}.%H \
 -o stratum+tcp://eu1.ethermine.org:14444 \
--u ${ETHEREUM_ADDRESS} \
+-u ${ETHEREUM_ADDRESS}.%H \
 -o stratum+tcp://asia1.ethermine.org:4444 \
--u ${ETHEREUM_ADDRESS} \
---eth_worker=%H
+-u ${ETHEREUM_ADDRESS}.%H \
 Restart=on-failure
 
 [Install]
