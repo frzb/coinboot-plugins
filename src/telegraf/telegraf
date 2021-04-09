@@ -1,0 +1,43 @@
+#!/bin/bash -e
+set -x
+
+# Copyright (C) 2021 Gunter Miegel coinboot.io
+#
+# This file is part of Coinboot.
+# This software may be modified and distributed under the terms
+# of the MIT license.  See the LICENSE file for details.
+#
+# Please notice even while this script is licensed with the
+# MIT license the software packaged by this script may be licensed by
+# an other license with different terms and conditions.
+# You have to agree to the license of the packaged software to use it.
+
+# Download and install Telegraf for Coinboot workers
+
+TELEGRAF_RELEASE=v1.18.1
+
+create_plugin.py start
+
+sudo apt update
+sudo apt install make git golang-1.14 --yes
+
+
+pwd
+cd /mnt/src/telegraf/upstream
+export PATH=$PATH:/usr/lib/go-1.14/bin
+export GOPATH=$HOME/work
+mkdir -vp $HOME/work $HOME/go
+
+make
+
+sudo apt purge make git golang-1.14 --yes
+sudo apt autoremove --yes
+sudo apt autoclean
+
+sudo rm -rf $GOPATH
+
+cp -v /mnt/src/telegraf/upstream/telegraf /usr/local/bin/telegraf
+
+cd /mnt/build
+
+create_plugin.py finish coinboot_$(basename $0)_${TELEGRAF_RELEASE}_$(date +%Y%m%d.%H%M)
