@@ -29,5 +29,4 @@ jobs:
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Upload artifacts to object storage
         run: |
-          s3cmd  --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" sync --recursive --acl-public build s3://coinboot
-          s3cmd info s3://coinboot
+          s3cmd  --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" sync --recursive --acl-public --exclude ".keep" build s3://coinboot
