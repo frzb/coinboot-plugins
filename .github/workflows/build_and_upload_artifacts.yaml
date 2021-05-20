@@ -2,7 +2,7 @@
 name: build
 on: [push, workflow_dispatch]
 jobs:
-  build_and_run:
+  build_and_upload_artifacts:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
@@ -12,9 +12,10 @@ jobs:
           sudo apt update
           sudo apt install --yes fakeroot bridge-utils
       # Coinboot plugins creation script have to be executable and we omit all upstream code directories
-      - name: Build Coinboot plugins with Coinbootmaker  
+      - name: Build Coinboot plugins with Coinbootmaker
         run: |
           for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
             ./coinbootmaker -p $plugin
+          done
       - name: List build artifacts
-        run: ls -la build 
+        run: ls -la build
