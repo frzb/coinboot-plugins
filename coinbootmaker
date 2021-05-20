@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
+set -Eeuo pipefail
+set -x
 
 # Copyright (C) 2018 - 2021 Gunter Miegel coinboot.io
 #
@@ -136,7 +138,7 @@ cd $LOWER/rootfs
 # archive is messed up.
 # We just extract the nested initramfs archive
 zcat $CACHE_DIR/$INITRAMFS | sudo cpio -idvm "rootfs.cgz"
-zcat rootfs.cgz | sudo cpio -idvm
+zcat rootfs.cgz | sudo cpio -idm
 
 # The nested initramfs archive can be removed now
 sudo rm -v rootfs.cgz
