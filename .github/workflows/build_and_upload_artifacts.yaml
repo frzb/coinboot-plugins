@@ -14,7 +14,8 @@ jobs:
       # Coinboot plugins creation script have to be executable and we omit all upstream code directories
       - name: Build Coinboot plugins with Coinbootmaker
         run: |
-          for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
+          #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
+          for plugin in teamredminer; do 
             ./coinbootmaker -p $plugin
           done
       - name: List build artifacts
