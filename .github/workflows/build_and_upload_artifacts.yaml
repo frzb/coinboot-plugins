@@ -29,5 +29,5 @@ jobs:
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Upload artifacts to object storage
         run: |
-          s3cmd sync --recursive --acl-public dist s3://coinboot --host https://s3.eu-central-1.wasabisys.com ./build 
+          s3cmd --host https://s3.eu-central-1.wasabisys.com sync --recursive --acl-public build s3://coinboot
           s3cmd info s3://coinboot
