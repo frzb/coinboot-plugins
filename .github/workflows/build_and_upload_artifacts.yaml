@@ -20,13 +20,14 @@ jobs:
           done
       - name: List build artifacts
         run: ls -la build
-      - name: Upload artifacts to object storage
-        uses: jakejarvis/s3-sync-action@master
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v1.1
         with:
-          args: --acl public-read --follow-symlinks
-        env:
-          AWS_S3_ENDPOINT: https://s3.eu-central-1.wasabisys.com
-          AWS_S3_BUCKET: coinboot
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: 'src'
+          provider: aws # default is linode
+          region: 'eu-central-1'
+          access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Upload artifacts to object storage
+        run: |
+          s3cmd sync --recursive --acl-public dist s3://coinboot --host https://s3.eu-central-1.wasabisys.com ./build 
+          s3cmd info s3://coinboot
