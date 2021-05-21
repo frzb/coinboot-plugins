@@ -7,6 +7,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v1.1
+        with:
+          provider: aws # 
+          region: 'eu-central-1'
+          access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Setup required packages for Coinbootmaker
         run: |
           sudo apt update
@@ -17,16 +24,8 @@ jobs:
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
           for plugin in teamredminer; do
             ./coinbootmaker -p $plugin
+            s3cmd  --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" sync --recursive --acl-public --exclude ".keep" "build/*$plugin*" s3://coinboot
           done
       - name: List build artifacts
         run: ls -la build
-      - name: Set up S3cmd cli tool
-        uses: s3-actions/s3cmd@v1.1
-        with:
-          provider: aws # 
-          region: 'eu-central-1'
-          access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: Upload artifacts to object storage
-        run: |
-          s3cmd  --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" sync --recursive --acl-public --exclude ".keep" build s3://coinboot
+    # Use https://github.com/marketplace/actions/dynamic-readme to generate dynamic list of available plugins in object storage
