@@ -30,5 +30,5 @@ jobs:
       - name: List build artifacts
         run: |
           ls -la build
-          s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" ls --recursive s3://coinboot/ | grep -oP '/[^\/]+$'
+          s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" ls --recursive s3://coinboot/ | grep -oP '[^\/]+$'
     # Use https://github.com/marketplace/actions/dynamic-readme to generate dynamic list of available plugins in object storage
