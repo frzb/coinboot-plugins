@@ -11,11 +11,16 @@
 # an other license with different terms and conditions.
 # You have to agree to the license of the packaged software to use it.
 
-# Download and install Team Red Miner
-
+### Coinboot plugin metadata ##################################################
+# Plugin: Team Red Miner 
+# Version: 0.8.3
+# Description: This is an optimized miner for AMD GPUs created by todxx and kerney666
+# Maintainer: Gunter Miegel <gunter.miegel@coinbboot.io>
+# Source: https://github.com/todxx/teamredminer
+###############################################################################
 create_plugin.py start
 
-TEAMREDMINER_RELEASE=0.8.1.1
+TEAMREDMINER_RELEASE=0.8.3
 TEAMREDMINER_ARCHIVE=teamredminer-v$TEAMREDMINER_RELEASE-linux.tgz
 TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/$TEAMREDMINER_RELEASE/$TEAMREDMINER_ARCHIVE
 WGET='wget'
