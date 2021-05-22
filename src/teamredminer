@@ -12,16 +12,16 @@
 # You have to agree to the license of the packaged software to use it.
 
 ### Coinboot plugin metadata ##################################################
-# Plugin: Team Red Miner 
-# Version: 0.8.3
+# Plugin: Team Red Miner
+# Version: v0.8.3
 # Description: This is an optimized miner for AMD GPUs created by todxx and kerney666
 # Maintainer: Gunter Miegel <gunter.miegel@coinbboot.io>
 # Source: https://github.com/todxx/teamredminer
 ###############################################################################
 create_plugin.py start
 
-TEAMREDMINER_RELEASE=0.8.3
-TEAMREDMINER_ARCHIVE=teamredminer-v$TEAMREDMINER_RELEASE-linux.tgz
+TEAMREDMINER_RELEASE=v0.8.3
+TEAMREDMINER_ARCHIVE=teamredminer-$TEAMREDMINER_RELEASE-linux.tgz
 TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/$TEAMREDMINER_RELEASE/$TEAMREDMINER_ARCHIVE
 WGET='wget'
 
@@ -41,7 +41,7 @@ else
 fi
 
 if ! [ -f "/usr/local/bin/teamredminer" ]; then
- cp -r "/tmp/teamredminer-v$TEAMREDMINER_RELEASE-linux/teamredminer" "/usr/local/bin/"
+ cp -r "/tmp/teamredminer-$TEAMREDMINER_RELEASE-linux/teamredminer" "/usr/local/bin/"
 else
   echo "teamredminer $TEAMREDMINER_RELEASE binary is already copied to the chroot."
 fi
