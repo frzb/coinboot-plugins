@@ -10,7 +10,7 @@ jobs:
       - name: Set up S3cmd cli tool
         uses: s3-actions/s3cmd@v1.1
         with:
-          provider: aws 
+          provider: aws
           region: 'eu-central-1'
           access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -24,7 +24,8 @@ jobs:
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
           for plugin in teamredminer; do
             ./coinbootmaker -p $plugin
-            s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" sync --acl-public --recursive --exclude "*" --include "./build/*$plugin*" ./build  s3://coinboot
+            which s3cmd
+            s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" put --acl-public --recursive --exclude ".keep" build s3://coinboot
           done
       - name: List build artifacts
         run: ls -la build
