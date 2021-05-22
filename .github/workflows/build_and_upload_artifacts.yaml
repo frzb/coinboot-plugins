@@ -19,7 +19,7 @@ jobs:
           sudo apt update
           sudo apt install --yes fakeroot bridge-utils
       # Coinboot plugins creation script have to be executable and we omit all upstream code directories
-      - name: Build Coinboot plugins with Coinbootmaker and upload to object storage 
+      - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
           for plugin in teamredminer; do
@@ -28,5 +28,7 @@ jobs:
             s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" put --acl-public --recursive --exclude ".keep" build/ s3://coinboot
           done
       - name: List build artifacts
-        run: ls -la build
+        run: |
+          ls -la build
+          s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com ls --recursive s3://coinboot/
     # Use https://github.com/marketplace/actions/dynamic-readme to generate dynamic list of available plugins in object storage
