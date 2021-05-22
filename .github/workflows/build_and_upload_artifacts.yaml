@@ -7,6 +7,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: yq - portable yaml processor
+        uses: mikefarah/yq@v4.9.3
       - name: Set up S3cmd cli tool
         uses: s3-actions/s3cmd@v1.1
         with:
@@ -22,7 +24,7 @@ jobs:
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
-          for plugin in teamredminer; do
+          for plugin in teamredminer.yaml; do
             ./coinbootmaker -p $plugin
             which s3cmd
             s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" put --acl-public --recursive --exclude ".keep" build/ s3://coinboot
