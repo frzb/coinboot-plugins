@@ -7,8 +7,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: yq - portable yaml processor
-        uses: mikefarah/yq@v4.9.3
+      - name: Set up yq - portable yaml processor
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/download/v4.9.3/yq_linux_amd64 -O /usr/local/bin/yq &&\
+          sudo chmod +x /usr/local/bin/yq
       - name: Set up S3cmd cli tool
         uses: s3-actions/s3cmd@v1.1
         with:
