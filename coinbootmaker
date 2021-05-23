@@ -453,7 +453,7 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   sudo runc exec -t coinbootmaker /usr/bin/bash
 elif [[ ./src/$plugin  == *.yaml ]]; then
- sudo runc exec coinbootmaker /usr/bin/bash -e < <(yq eval '.run' $BASEDIR/src/$plugin)
+ sudo runc exec coinbootmaker /usr/bin/bash -e < <(echo 'cd /mnt/build' && yq eval '.run' $BASEDIR/src/$plugin)
 else
   sudo runc exec coinbootmaker /usr/bin/bash -c "cd /mnt/build/ && /mnt/src/$plugin"
 fi
