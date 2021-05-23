@@ -19,7 +19,7 @@ run: |
   create_plugin.py start
 
   ETHMINER_RELASE=0.18.0
-  ETHMINER_ARCHIVE=ethminer-$ETHMINER_RELASE-linux-x86_64.tar.gz
+  ETHMINER_ARCHIVE=ethminer-$ETHMINER_RELASE-cuda-9-linux-x86_64.tar.gz
   ETHMINER_URL=https://github.com/ethereum-mining/ethminer/releases/download/v$ETHMINER_RELASE/$ETHMINER_ARCHIVE
   WGET='wget'
 
