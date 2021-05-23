@@ -18,6 +18,7 @@ source: https://github.com/todxx/teamredminer
 run: |
   create_plugin.py start
 
+  NAME=teamredminer
   TEAMREDMINER_RELEASE=v0.8.3
   TEAMREDMINER_ARCHIVE=teamredminer-$TEAMREDMINER_RELEASE-linux.tgz
   TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/$TEAMREDMINER_RELEASE/$TEAMREDMINER_ARCHIVE
@@ -97,4 +98,4 @@ run: |
 
   chmod a+x "/usr/local/bin/teamredminerctl"
 
-  create_plugin.py finish coinboot_$(basename $0)_${TEAMREDMINER_RELEASE}_$(date +%Y%m%d.%H%M)
+  create_plugin.py finish coinboot_${NAME}_${TEAMREDMINER_RELEASE}_$(date +%Y%m%d.%H%M)
