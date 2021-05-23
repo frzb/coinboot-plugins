@@ -26,7 +26,7 @@ jobs:
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
-          for plugin in teamredminer.yaml; do
+          for plugin in teamredminer.yaml ethminer.yaml; do
             ./coinbootmaker -p $plugin
             which s3cmd
             s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" put --acl-public --recursive --exclude ".keep" build/ s3://coinboot
