@@ -11,14 +11,13 @@
 # You have to agree to the license of the packaged software to use it.
 
 plugin: ethminer
+archive_name: ethminer
 version: v0.18.0
 description: Ethereum miner with OpenCL, CUDA and stratum support
 maintainer: Gunter Miegel <gunter.miegel@coinbboot.io>
 source: https://github.com/ethereum-mining/ethminer
 run: |
-  create_plugin.py start
 
-  NAME=ethminer
   ETHMINER_RELASE=0.18.0
   ETHMINER_ARCHIVE=ethminer-$ETHMINER_RELASE-cuda-9-linux-x86_64.tar.gz
   ETHMINER_URL=https://github.com/ethereum-mining/ethminer/releases/download/v$ETHMINER_RELASE/$ETHMINER_ARCHIVE
@@ -96,5 +95,3 @@ run: |
   EOF
 
   chmod a+x "/usr/local/bin/ethminerctl"
-
-  create_plugin.py finish coinboot_${NAME}_${ETHMINER_RELASE}_$(date +%Y%m%d.%H%M)

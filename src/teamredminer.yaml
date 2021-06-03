@@ -11,14 +11,12 @@
 # You have to agree to the license of the packaged software to use it.
 
 plugin: Team Red Miner
+archive_name: teamredminer
 version: v0.8.3
 description: This is an optimized miner for AMD GPUs created by todxx and kerney666
 maintainer: Gunter Miegel <gunter.miegel@coinbboot.io>
 source: https://github.com/todxx/teamredminer
 run: |
-  create_plugin.py start
-
-  NAME=teamredminer
   TEAMREDMINER_RELEASE=v0.8.3
   TEAMREDMINER_ARCHIVE=teamredminer-$TEAMREDMINER_RELEASE-linux.tgz
   TEAMREDMINER_URL=https://github.com/todxx/teamredminer/releases/download/$TEAMREDMINER_RELEASE/$TEAMREDMINER_ARCHIVE
@@ -97,5 +95,3 @@ run: |
   EOF
 
   chmod a+x "/usr/local/bin/teamredminerctl"
-
-  create_plugin.py finish coinboot_${NAME}_${TEAMREDMINER_RELEASE}_$(date +%Y%m%d.%H%M)
