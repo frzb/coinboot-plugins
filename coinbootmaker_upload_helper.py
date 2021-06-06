@@ -32,7 +32,7 @@ def extract_full_archive_name(subprocess_output):
     return None
 
 
-def upload_file(file_name, bucket, object_name=None):
+def upload_file(file_name, bucket, yaml, object_name=None):
     """Upload a file to an S3 bucket
 
     :param file_name: File to upload
@@ -53,7 +53,18 @@ def upload_file(file_name, bucket, object_name=None):
 
     # Upload the file
     try:
-        s3_client.upload_file(file_name, bucket, object_name)
+        response = s3_client.upload_file(
+            file_name,
+            bucket,
+            object_name,
+            ExtraArgs={
+                "Metadata": {
+                    "x-amz-meta-plugin": yaml["plugin"],
+                    "x-amz-meta-version": yaml["version"],
+                }
+            }
+        )
+        print(response)
     except ClientError as e:
         logging.error(e)
         return False
@@ -66,7 +77,7 @@ def main():
         script_name = os.path.basename(f.name)
         archive_name = call_coinbootmaker(script_name)
         print(archive_name)
-        upload_file("build/" + archive_name, "coinboot", archive_name)
+        upload_file("build/" + archive_name, "coinboot", yaml.data, archive_name)
 
 
 if __name__ == "__main__":
