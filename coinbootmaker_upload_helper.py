@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 
+# Copyright (C) 2021 Gunter Miegel coinboot.io
+#
+# This file is part of Coinboot.
+# This software may be modified and distributed under the terms
+# of the MIT license.  See the LICENSE file for details.
+#
+# Please notice even while this script is licensed with the
+# MIT license the software packaged by this script may be licensed by
+# an other license with different terms and conditions.
+# You have to agree to the license of the packaged software to use it.
+
 from strictyaml import load, Map, Str, Int, Seq, YAMLError
 import re
 import os
@@ -57,12 +68,17 @@ def upload_file(file_name, bucket, yaml, object_name=None):
             file_name,
             bucket,
             object_name,
+            # Metadata prefix 'x-amz-meta-' is added automatically.
             ExtraArgs={
                 "Metadata": {
-                    "x-amz-meta-plugin": yaml["plugin"],
-                    "x-amz-meta-version": yaml["version"],
+                    "archive_name": yaml["archive_name"],
+                    "description": yaml["description"],
+                    "maintainer": yaml["maintainer"],
+                    "plugin": yaml["plugin"],
+                    "source": yaml["source"],
+                    "version": yaml["version"],
                 }
-            }
+            },
         )
         print(response)
     except ClientError as e:
