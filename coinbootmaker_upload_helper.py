@@ -43,7 +43,7 @@ def extract_full_archive_name(subprocess_output):
     return None
 
 
-def upload_file(file_name, bucket, yaml, object_name=None):
+def upload_file(s3_client, file_name, bucket, yaml, object_name=None):
     """Upload a file to an S3 bucket
 
     :param file_name: File to upload
@@ -54,13 +54,6 @@ def upload_file(file_name, bucket, yaml, object_name=None):
     # If S3 object_name was not specified, use file_name
     if object_name is None:
         object_name = file_name
-
-    s3_client = boto3.client(
-        "s3",
-        endpoint_url="https://s3.eu-central-1.wasabisys.com",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    )
 
     # Upload the file
     try:
@@ -87,13 +80,50 @@ def upload_file(file_name, bucket, yaml, object_name=None):
     return True
 
 
+def create_markdown_table_of_objects(s3_client, bucket):
+
+    metadata_keys_sorted = ["plugin", "version", "description", "maintainer", "source"]
+    header_keys_sorted = [
+        metadata_key.capitalize() for metadata_key in metadata_keys_sorted
+    ]
+    header_separators = ["---" for metadata_key in metadata_keys_sorted]
+
+    first_header_row = "| " + " | ".join(header_keys_sorted) + " |"
+    second_header_row = "| " + " | ".join(header_separators) + " |"
+
+    print(first_header_row)
+    print(second_header_row)
+
+    response_contents = s3_client.list_objects(Bucket=bucket)["Contents"]
+    for object in response_contents:
+        metadata = s3_client.head_object(Bucket=bucket, Key=object["Key"])["Metadata"]
+        line = []
+
+        for key in metadata_keys_sorted:
+            line.append(metadata[key])
+
+        markdown_table_row = "| " + " | ".join(line) + " |"
+        print(markdown_table_row)
+
 def main():
+
+    s3_client = boto3.client(
+        "s3",
+        endpoint_url="https://s3.eu-central-1.wasabisys.com",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    )
+
     with open("src/ethminer.yaml", "r") as f:
         yaml = load(f.read())
         script_name = os.path.basename(f.name)
         archive_name = call_coinbootmaker(script_name)
         print(archive_name)
-        upload_file("build/" + archive_name, "coinboot", yaml.data, archive_name)
+        upload_file(
+            s3_client, "build/" + archive_name, "coinboot", yaml.data, archive_name
+        )
+
+    create_markdown_table_of_objects(s3_client, "coinboot")
 
 
 if __name__ == "__main__":
