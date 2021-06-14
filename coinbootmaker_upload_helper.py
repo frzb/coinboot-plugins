@@ -87,7 +87,6 @@ def create_markdown_table_of_objects(s3_client, bucket):
         metadata_key.capitalize() for metadata_key in metadata_keys_sorted
     ]
     header_separators = ["---" for metadata_key in metadata_keys_sorted]
-
     first_header_row = "| " + " | ".join(header_keys_sorted) + " |"
     second_header_row = "| " + " | ".join(header_separators) + " |"
     markdown_table = []
@@ -95,6 +94,7 @@ def create_markdown_table_of_objects(s3_client, bucket):
     markdown_table.append(first_header_row)
     markdown_table.append(second_header_row)
 
+    # TODO: Error handling for S3 API call - failing API or objects, metadata missing
     response_contents = s3_client.list_objects(Bucket=bucket)["Contents"]
     for object in response_contents:
         metadata = s3_client.head_object(Bucket=bucket, Key=object["Key"])["Metadata"]
@@ -109,10 +109,10 @@ def create_markdown_table_of_objects(s3_client, bucket):
     return markdown_table
 
 
-# def concat_with_readme(markdown_table, readme_file):
-#
-#    with open(readme_file) a f:
-#        f.write(markdown_table)
+def concat_with_readme(readme_template_file, markdown_table):
+    with open(readme_template_file, "a") as f:
+        f.write("\n".join(markdown_table))
+
 
 
 def main():
@@ -136,6 +136,7 @@ def main():
     markdown_table = create_markdown_table_of_objects(s3_client, "coinboot")
     print("\n".join(markdown_table))
 
+    concat_with_readme('README.md', markdown_table)
 
 if __name__ == "__main__":
     main()
