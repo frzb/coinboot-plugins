@@ -90,9 +90,10 @@ def create_markdown_table_of_objects(s3_client, bucket):
 
     first_header_row = "| " + " | ".join(header_keys_sorted) + " |"
     second_header_row = "| " + " | ".join(header_separators) + " |"
+    markdown_table = []
 
-    print(first_header_row)
-    print(second_header_row)
+    markdown_table.append(first_header_row)
+    markdown_table.append(second_header_row)
 
     response_contents = s3_client.list_objects(Bucket=bucket)["Contents"]
     for object in response_contents:
@@ -103,7 +104,16 @@ def create_markdown_table_of_objects(s3_client, bucket):
             line.append(metadata[key])
 
         markdown_table_row = "| " + " | ".join(line) + " |"
-        print(markdown_table_row)
+        markdown_table.append(markdown_table_row)
+
+    return markdown_table
+
+
+# def concat_with_readme(markdown_table, readme_file):
+#
+#    with open(readme_file) a f:
+#        f.write(markdown_table)
+
 
 def main():
 
@@ -123,7 +133,8 @@ def main():
             s3_client, "build/" + archive_name, "coinboot", yaml.data, archive_name
         )
 
-    create_markdown_table_of_objects(s3_client, "coinboot")
+    markdown_table = create_markdown_table_of_objects(s3_client, "coinboot")
+    print("\n".join(markdown_table))
 
 
 if __name__ == "__main__":
