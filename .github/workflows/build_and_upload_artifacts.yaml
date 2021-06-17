@@ -34,4 +34,8 @@ jobs:
       - name: List build artifacts
         run: |
           ls -la build
-    # Use https://github.com/marketplace/actions/dynamic-readme to generate dynamic list of available plugins in object storage
+      - name: Push automatic changes on README.md
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Apply automatic changes of Coinboot plugin table [skip ci]
+          file_pattern: README.md 
