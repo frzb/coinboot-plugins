@@ -18,11 +18,11 @@ jobs:
         run: |
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
           for plugin in ethminer.yaml; do
-            ./coinbootmaker_helper create $plugin
+            pipenv run ./coinbootmaker_helper create $plugin
           done
       - name: Create README with list of available Coinboot plugins
         run: |
-          ./coinbootmaker_helper create readme
+          pipenv run ./coinbootmaker_helper create readme
           cat README.md
       - name: List build artifacts
         run: |
