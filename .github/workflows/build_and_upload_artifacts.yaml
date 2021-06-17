@@ -7,17 +7,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Set up yq - portable yaml processor
-        run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/v4.9.3/yq_linux_amd64 -O /usr/local/bin/yq &&\
-          sudo chmod +x /usr/local/bin/yq
-      - name: Set up S3cmd cli tool
-        uses: s3-actions/s3cmd@v1.1
-        with:
-          provider: aws
-          region: 'eu-central-1'
-          access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Setup required packages for Coinbootmaker
         run: |
           sudo apt update
@@ -26,11 +15,13 @@ jobs:
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
-          for plugin in teamredminer.yaml ethminer.yaml; do
-            ./coinbootmaker -p $plugin
-            which s3cmd
-            s3cmd --host=s3.wasabisys.com --host-bucket="%(bucket)s.s3.wasabisys.com" put --acl-public --recursive --exclude ".keep" build/ s3://coinboot
+          for plugin in ethminer.yaml; do
+            ./coinbootmaker_helper create $plugin
           done
+      - name: Create README with list of available Coinboot plugins
+        run: |
+          ./coinbootmaker_helper create readme
+          cat README.md
       - name: List build artifacts
         run: |
           ls -la build

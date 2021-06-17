@@ -11,6 +11,12 @@
 # an other license with different terms and conditions.
 # You have to agree to the license of the packaged software to use it.
 
+'''
+Usage:
+    coinbootmaker_helper create plugin <path> 
+    coinbootmaker_helper create readme
+'''
+
 from strictyaml import load, Map, Str, Int, Seq, YAMLError
 import re
 import os
@@ -18,6 +24,7 @@ import subprocess
 import boto3
 import logging
 import fileinput
+from docopt import docopt
 from botocore.exceptions import ClientError
 
 
@@ -125,26 +132,28 @@ def concat_with_readme(readme_template_file, readme_file, markdown_table):
 
 
 def main():
-
     s3_client = boto3.client(
         "s3",
         endpoint_url="https://s3.eu-central-1.wasabisys.com",
         aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
         aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
     )
+    args = docopt(__doc__)
+    if args["plugin"]:
+        path = args["<path>"]
 
-    with open("src/ethminer.yaml", "r") as f:
-        yaml = load(f.read())
-        script_name = os.path.basename(f.name)
-        archive_name = call_coinbootmaker(script_name)
-        print(archive_name)
-        upload_file(
-            s3_client, "build/" + archive_name, "coinboot", yaml.data, archive_name
-        )
+        with open(path, "r") as f:
+            yaml = load(f.read())
+            script_name = os.path.basename(f.name)
+            archive_name = call_coinbootmaker(script_name)
+            print(archive_name)
+            upload_file(
+                s3_client, "build/" + archive_name, "coinboot", yaml.data, archive_name
+            )
 
-    markdown_table = create_markdown_table_of_objects(s3_client, "coinboot")
-
-    concat_with_readme("README_template.md", "README.md", markdown_table)
+    if args["readme"]:
+        markdown_table = create_markdown_table_of_objects(s3_client, "coinboot")
+        concat_with_readme("README_template.md", "README.md", markdown_table)
 
 if __name__ == "__main__":
     main()
