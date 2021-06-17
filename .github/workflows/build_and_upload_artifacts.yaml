@@ -4,6 +4,9 @@ on: [push, workflow_dispatch]
 jobs:
   build_and_upload_artifacts:
     runs-on: ubuntu-20.04
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -17,8 +20,8 @@ jobs:
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
           #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
-          for plugin in ethminer.yaml; do
-            pipenv run ./coinbootmaker_helper create $plugin
+          for plugin in src/ethminer.yaml; do
+            pipenv run ./coinbootmaker_helper create plugin $plugin
           done
       - name: Create README with list of available Coinboot plugins
         run: |
