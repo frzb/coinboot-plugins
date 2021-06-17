@@ -17,6 +17,7 @@ import os
 import subprocess
 import boto3
 import logging
+import fileinput
 from botocore.exceptions import ClientError
 
 
@@ -109,10 +110,18 @@ def create_markdown_table_of_objects(s3_client, bucket):
     return markdown_table
 
 
-def concat_with_readme(readme_template_file, markdown_table):
-    with open(readme_template_file, "a") as f:
-        f.write("\n".join(markdown_table))
+def concat_with_readme(readme_template_file, readme_file, markdown_table):
+    readme_file_content = []
 
+    for line in fileinput.input(readme_template_file):
+        line = line.rstrip("\r\n")
+        if line == "<!-- PLACEHOLDER FOR MARKDOWN PLUGIN TABLE -->":
+            readme_file_content.extend(markdown_table)
+        else:
+            readme_file_content.append(line)
+
+    with open(readme_file, "w") as f:
+        f.write("\n".join(readme_file_content))
 
 
 def main():
@@ -134,9 +143,8 @@ def main():
         )
 
     markdown_table = create_markdown_table_of_objects(s3_client, "coinboot")
-    print("\n".join(markdown_table))
 
-    concat_with_readme('README.md', markdown_table)
+    concat_with_readme("README_template.md", "README.md", markdown_table)
 
 if __name__ == "__main__":
     main()
