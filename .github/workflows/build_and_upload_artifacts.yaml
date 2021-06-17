@@ -14,8 +14,12 @@ jobs:
         run: |
           sudo apt update
           sudo apt install --yes fakeroot bridge-utils pipenv
+      - name: Set up yq - portable yaml processor
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/download/v4.9.3/yq_linux_amd64 -O /usr/local/bin/yq &&\
+          sudo chmod +x /usr/local/bin/yq
       - name: Install Python dependcies with pipenv
-        run: pipenv install 
+        run: pipenv install
       # Coinboot plugins creation script have to be executable and we omit all upstream code directories
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
