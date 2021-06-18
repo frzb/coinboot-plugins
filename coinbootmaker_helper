@@ -11,11 +11,11 @@
 # an other license with different terms and conditions.
 # You have to agree to the license of the packaged software to use it.
 
-'''
+"""
 Usage:
     coinbootmaker_helper create plugin <path>
     coinbootmaker_helper create readme
-'''
+"""
 
 from strictyaml import load, Map, Str, Int, Seq, YAMLError
 import re
@@ -82,7 +82,6 @@ def upload_file(s3_client, file_name, bucket, yaml, object_name=None):
                 }
             },
         )
-        print(response)
     except ClientError as e:
         logging.error(e)
         return False
@@ -95,12 +94,14 @@ def create_list_of_plugins(s3_client, bucket):
     header_keys_sorted = [
         metadata_key.capitalize() for metadata_key in metadata_keys_sorted
     ]
+    header_keys_sorted.append("URL")
 
     list_of_plugins = []
 
     list_of_plugins.append(header_keys_sorted)
 
     # TODO: Error handling for S3 API call - failing API or objects, metadata missing
+
     response_contents = s3_client.list_objects(Bucket=bucket)["Contents"]
     for object in response_contents:
         metadata = s3_client.head_object(Bucket=bucket, Key=object["Key"])["Metadata"]
@@ -108,11 +109,11 @@ def create_list_of_plugins(s3_client, bucket):
 
         for key in metadata_keys_sorted:
             line.append(metadata[key])
-
+        line.append("https://s3.eu-central-1.wasabisys.com/coinboot/" + object["Key"])
         list_of_plugins.append(line)
-    print(list_of_plugins)
-    markdown_formatted = tabulate(list_of_plugins, headers="firstrow", tablefmt="github")
-    print(markdown_formatted.split("\n"))
+    markdown_formatted = tabulate(
+        list_of_plugins, headers="firstrow", tablefmt="github"
+    )
     return markdown_formatted.split("\n")
 
 
@@ -153,6 +154,7 @@ def main():
     if args["readme"]:
         list_of_plugins = create_list_of_plugins(s3_client, "coinboot")
         concat_with_readme("README_template.md", "README.md", list_of_plugins)
+
 
 if __name__ == "__main__":
     main()
