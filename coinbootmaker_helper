@@ -13,7 +13,7 @@
 
 '''
 Usage:
-    coinbootmaker_helper create plugin <path> 
+    coinbootmaker_helper create plugin <path>
     coinbootmaker_helper create readme
 '''
 
@@ -24,6 +24,7 @@ import subprocess
 import boto3
 import logging
 import fileinput
+from tabulate import tabulate
 from docopt import docopt
 from botocore.exceptions import ClientError
 
@@ -88,19 +89,16 @@ def upload_file(s3_client, file_name, bucket, yaml, object_name=None):
     return True
 
 
-def create_markdown_table_of_objects(s3_client, bucket):
+def create_list_of_plugins(s3_client, bucket):
 
     metadata_keys_sorted = ["plugin", "version", "description", "maintainer", "source"]
     header_keys_sorted = [
         metadata_key.capitalize() for metadata_key in metadata_keys_sorted
     ]
-    header_separators = ["---" for metadata_key in metadata_keys_sorted]
-    first_header_row = "| " + " | ".join(header_keys_sorted) + " |"
-    second_header_row = "| " + " | ".join(header_separators) + " |"
-    markdown_table = []
 
-    markdown_table.append(first_header_row)
-    markdown_table.append(second_header_row)
+    list_of_plugins = []
+
+    list_of_plugins.append(header_keys_sorted)
 
     # TODO: Error handling for S3 API call - failing API or objects, metadata missing
     response_contents = s3_client.list_objects(Bucket=bucket)["Contents"]
@@ -111,19 +109,20 @@ def create_markdown_table_of_objects(s3_client, bucket):
         for key in metadata_keys_sorted:
             line.append(metadata[key])
 
-        markdown_table_row = "| " + " | ".join(line) + " |"
-        markdown_table.append(markdown_table_row)
+        list_of_plugins.append(line)
+    print(list_of_plugins)
+    markdown_formatted = tabulate(list_of_plugins, headers="firstrow", tablefmt="github")
+    print(markdown_formatted.split("\n"))
+    return markdown_formatted.split("\n")
 
-    return markdown_table
 
-
-def concat_with_readme(readme_template_file, readme_file, markdown_table):
+def concat_with_readme(readme_template_file, readme_file, list_of_plugins):
     readme_file_content = []
 
     for line in fileinput.input(readme_template_file):
         line = line.rstrip("\r\n")
         if line == "<!-- PLACEHOLDER FOR MARKDOWN PLUGIN TABLE -->":
-            readme_file_content.extend(markdown_table)
+            readme_file_content.extend(list_of_plugins)
         else:
             readme_file_content.append(line)
 
@@ -152,8 +151,8 @@ def main():
             )
 
     if args["readme"]:
-        markdown_table = create_markdown_table_of_objects(s3_client, "coinboot")
-        concat_with_readme("README_template.md", "README.md", markdown_table)
+        list_of_plugins = create_list_of_plugins(s3_client, "coinboot")
+        concat_with_readme("README_template.md", "README.md", list_of_plugins)
 
 if __name__ == "__main__":
     main()
