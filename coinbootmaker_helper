@@ -141,15 +141,33 @@ def main():
     args = docopt(__doc__)
     if args["plugin"]:
         path = args["<path>"]
+        schema = Map(
+            {
+                "plugin": Str(),
+                "archive_name": Str(),
+                "version": Str(),
+                "description": Str(),
+                "maintainer": Str(),
+                "source": Str(),
+                "run": Str(),
+            }
+        )
 
         with open(path, "r") as f:
-            yaml = load(f.read())
-            script_name = os.path.basename(f.name)
-            archive_name = call_coinbootmaker(script_name)
-            print(archive_name)
-            upload_file(
-                s3_client, "build/" + archive_name, "coinboot", yaml.data, archive_name
-            )
+            try:
+                yaml = load(f.read(), schema)
+                script_name = os.path.basename(f.name)
+                archive_name = call_coinbootmaker(script_name)
+                print(archive_name)
+                upload_file(
+                    s3_client,
+                    "build/" + archive_name,
+                    "coinboot",
+                    yaml.data,
+                    archive_name,
+                )
+            except YAMLError as error:
+                print(path + ": " + str(error))
 
     if args["readme"]:
         list_of_plugins = create_list_of_plugins(s3_client, "coinboot")
