@@ -72,15 +72,15 @@ def upload_file(s3_client, file_name, bucket, yaml, object_name=None):
             object_name,
             # Metadata prefix 'x-amz-meta-' is added automatically.
             ExtraArgs={
+                "ACL": "public-read",
                 "Metadata": {
-                    "ACL": "public-read",
                     "archive_name": yaml["archive_name"],
                     "description": yaml["description"],
                     "maintainer": yaml["maintainer"],
                     "plugin": yaml["plugin"],
                     "source": yaml["source"],
                     "version": yaml["version"],
-                }
+                },
             },
         )
     except ClientError as e:
