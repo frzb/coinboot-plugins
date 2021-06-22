@@ -73,6 +73,7 @@ def upload_file(s3_client, file_name, bucket, yaml, object_name=None):
             # Metadata prefix 'x-amz-meta-' is added automatically.
             ExtraArgs={
                 "Metadata": {
+                    "ACL": "public-read",
                     "archive_name": yaml["archive_name"],
                     "description": yaml["description"],
                     "maintainer": yaml["maintainer"],
@@ -156,7 +157,7 @@ def main():
         with open(path, "r") as f:
             try:
                 yaml = load(f.read(), schema)
-                script_name = path.replace("src","")
+                script_name = path.replace("src", "")
                 archive_name = call_coinbootmaker(script_name)
                 print(archive_name)
                 upload_file(
