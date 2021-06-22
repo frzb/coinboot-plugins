@@ -156,7 +156,7 @@ def main():
         with open(path, "r") as f:
             try:
                 yaml = load(f.read(), schema)
-                script_name = os.path.basename(f.name)
+                script_name = path.replace("src","")
                 archive_name = call_coinbootmaker(script_name)
                 print(archive_name)
                 upload_file(
