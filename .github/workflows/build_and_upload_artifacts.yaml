@@ -23,8 +23,7 @@ jobs:
       # Coinboot plugins creation script have to be executable and we omit all upstream code directories
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
-          #for plugin in $(find src -executable -type f ! -path "*/upstream/*" | sed 's/src\///g'); do
-          for plugin in src/*.yaml ; do
+          for plugin in $(find src -executable -name "*.yaml" -type f ! -path "*/upstream/*"); do
             pipenv run ./coinbootmaker_helper create plugin $plugin
           done
       - name: Create README with list of available Coinboot plugins
