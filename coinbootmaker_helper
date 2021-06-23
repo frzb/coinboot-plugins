@@ -33,7 +33,7 @@ def call_coinbootmaker(script_name):
     coinbootmaker_output = subprocess.run(
         ["./coinbootmaker", "-p", script_name], stdout=subprocess.PIPE, check=True
     )
-    return extract_full_archive_name(coinbootmaker_output)
+    return coinbootmaker_output
 
 
 def extract_full_archive_name(subprocess_output):
@@ -49,6 +49,15 @@ def extract_full_archive_name(subprocess_output):
         if match:
             fullname_created_archive = match.group(1)
             return fullname_created_archive
+    return None
+
+
+def detect_kernel(subprocess_output):
+    for line in subprocess_output.stdout.decode("utf-8").split("\n"):
+        match = re.search("lib\/modules\/(.*-generic)\/.*$", line)
+        if match:
+            kernel = match.group(1)
+            return kernel
     return None
 
 
@@ -158,14 +167,21 @@ def main():
             try:
                 yaml = load(f.read(), schema)
                 script_name = path.replace("src", "")
-                archive_name = call_coinbootmaker(script_name)
+                coinbootmaker_output = call_coinbootmaker(script_name)
+                archive_name = extract_full_archive_name(coinbootmaker_output)
                 print(archive_name)
+                kernel = detect_kernel(coinbootmaker_output)
+                if kernel:
+                    prefix = kernel
+                else:
+                    prefix = "all"
+                print("Bucket prefix is: " + prefix)
                 upload_file(
                     s3_client,
                     "build/" + archive_name,
                     "coinboot",
                     yaml.data,
-                    archive_name,
+                    prefix + "/" + archive_name,
                 )
             except YAMLError as error:
                 print(path + ": " + str(error))
