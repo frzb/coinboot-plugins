@@ -27,7 +27,7 @@ jobs:
       - id: files
         uses: jitterbit/get-changed-files@v1
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
-      - run: |
+        run: |
           for plugin in ${{ steps.files.outputs.modified }}; do
             if [[ $plugin != "*/upstream/*" ]]; then
               if [[ $plugin == "*.yaml" ]] && [[ $plugin == "*src*" ]]; then
