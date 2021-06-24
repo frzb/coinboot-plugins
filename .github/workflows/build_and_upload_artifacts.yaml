@@ -20,11 +20,18 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
       - name: Install Python dependcies with pipenv
         run: pipenv install
-      # Coinboot plugins creation script have to be executable and we omit all upstream code directories
+      # Detect changed Coinboot plugin creation files and trigger build only for these.
+      # Omit all upstream code directories.
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
+        uses: jitterbit/get-changed-files@v1
         run: |
-          for plugin in $(find src -executable -name "*.yaml" -type f ! -path "*/upstream/*"); do
-            pipenv run ./coinbootmaker_helper create plugin $plugin
+          for plugin in ${{ steps.files.outputs.modified }};
+            if [[ $plugin != "*/upstream/*" ]]: then
+              if [[ $plugin == "*.yaml" ]]; then
+                echo "Changes in $plugin, triggering build..."
+                pipenv run ./coinbootmaker_helper create plugin $plugin
+              fi
+            fi
           done
       - name: Create README with list of available Coinboot plugins
         run: |
