@@ -20,10 +20,11 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
       - name: Install Python dependcies with pipenv
         run: pipenv install
+      - name: Collect changed files  
+        uses: jitterbit/get-changed-files@v1
       # Detect changed Coinboot plugin creation files and trigger build only for these.
       # Omit all upstream code directories.
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
-        uses: jitterbit/get-changed-files@v1
         run: |
           for plugin in ${{ steps.files.outputs.modified }};
             if [[ $plugin != "*/upstream/*" ]]: then
