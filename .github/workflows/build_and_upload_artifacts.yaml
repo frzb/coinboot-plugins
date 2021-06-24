@@ -29,8 +29,8 @@ jobs:
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
           for plugin in ${{ steps.files.outputs.modified }}; do
-            if [[ $plugin != "*/upstream/*" ]]; then
-              if [[ $plugin == "*.yaml" ]] && [[ $plugin == "*src*" ]]; then
+            if [[ "$plugin" != "*/upstream/*" ]]; then
+              if [[ "$plugin" == "*.yaml" ]] && [[ "$plugin" == "*src*" ]]; then
                 echo "Changes in $plugin, triggering build..."
                 pipenv run ./coinbootmaker_helper create plugin $plugin
               fi
