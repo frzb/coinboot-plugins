@@ -27,7 +27,7 @@ jobs:
         # Omit all upstream code directories and only use yaml files in "src".
       - name: Build Coinboot plugins with Coinbootmaker and upload to object storage
         run: |
-          for plugin in ${{ steps.changed_files.outputs.modified }}; do
+          for plugin in ${{ steps.changed_files.outputs.added_modified }}; do
             if [[ "$plugin" != */upstream/* ]]; then
               if [[ "$plugin" == *.yaml ]] && [[ "$plugin" == *src* ]]; then
                 echo "Changes in $plugin, triggering build..."

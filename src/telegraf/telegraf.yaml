@@ -14,18 +14,17 @@
 plugin: Telegraf
 archive_name: telegraf
 version: v1.18.1
-description: The plugin-driven server agent for collecting & reporting metrics. 
+description: The plugin-driven server agent for collecting & reporting metrics.
 maintainer: Gunter Miegel <gunter.miegel@coinboot.io>
-source: The plugin-driven server agent for collecting & reporting metrics. 
+source: https://github.com/influxdata/telegraf
 run: |
   set -e -x
-  
+
   TELEGRAF_RELEASE=v1.18.1
 
   sudo apt update
   sudo apt install make git golang-1.14 --yes
-
-
+  
   pwd
   cd /mnt/src/telegraf/upstream
   export PATH=$PATH:/usr/lib/go-1.14/bin
