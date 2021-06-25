@@ -9,9 +9,13 @@ It also contains `coinbootmaker` - a little helper to build your own Coinboot pl
   
 For more information how to boot your machines with Coinboot visit: https://coinboot.io
 
+## Coinboot Plugins 
+
 <!-- PLACEHOLDER FOR MARKDOWN PLUGIN TABLE -->
 
 ## Requirements
+
+* Coinboot with kernel `5.4.0-58-generic`
 
 ### If you want to build plugins on your own: 
 
