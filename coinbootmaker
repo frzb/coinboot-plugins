@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
+set -Eeo pipefail
+set -x
 
 # Copyright (C) 2018 - 2021 Gunter Miegel coinboot.io
 #
@@ -136,7 +138,7 @@ cd $LOWER/rootfs
 # archive is messed up.
 # We just extract the nested initramfs archive
 zcat $CACHE_DIR/$INITRAMFS | sudo cpio -idvm "rootfs.cgz"
-zcat rootfs.cgz | sudo cpio -idvm
+zcat rootfs.cgz | sudo cpio -idm
 
 # The nested initramfs archive can be removed now
 sudo rm -v rootfs.cgz
@@ -450,8 +452,15 @@ sudo ip netns exec coinbootmaker ip route add default via 172.17.0.1
 
 if [ ! -z $interactive ] && [ $interactive = 'true' ]; then
   sudo runc exec -t coinbootmaker /usr/bin/bash
+elif [[ ./src/$plugin  == *.yaml ]]; then
+ sudo runc exec --cwd /mnt/build coinbootmaker create_plugin.py start
+ sudo runc exec --cwd /mnt/build coinbootmaker /usr/bin/bash -e < <(yq eval '.run' $BASEDIR/src/$plugin)
+ NAME=$(yq eval '.archive_name' $BASEDIR/src/$plugin)
+ VERSION=$(yq eval '.version' $BASEDIR/src/$plugin)
+ BUILD_DATE=$(date +%Y%m%d.%H%M)
+ sudo runc exec --cwd /mnt/build coinbootmaker create_plugin.py finish coinboot_${NAME}_${VERSION}_$BUILD_DATE
 else
-  sudo runc exec -t coinbootmaker /usr/bin/bash -c "cd /mnt/build/ && /mnt/src/$plugin"
+  sudo runc exec coinbootmaker /usr/bin/bash -c "cd /mnt/build/ && /mnt/src/$plugin"
 fi
 
 # Cleanup
